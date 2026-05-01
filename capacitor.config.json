@@ -1,5 +1,12 @@
 {
   "appId": "com.sufian.watoolkit",
   "appName": "WA Toolkit",
-  "webDir": "www"
+  "webDir": "www",
+  "plugins": {
+    "Keyboard": {
+      "resize": "body",
+      "style": "DARK",
+      "resizeOnFullScreen": true
+    }
+  }
 }
