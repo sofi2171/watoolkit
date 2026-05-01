@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fancy Fonts - WA Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #128C7E;
+            --primary-dark: #075E54;
+            --accent: #00bcd4;
+            --bg-color: #f0f2f5;
+            --white: #ffffff;
+            --text-dark: #111b21;
+            --text-muted: #667781;
+            --border: #e2e8f0;
+        }
+
+        /* Basic Reset & Perfect Screen Lock */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100vw; background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overflow-y: hidden; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; overflow-x: hidden; }
+
+        /* Header */
+        .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; width: 100%; }
+        .header i { font-size: 20px; cursor: pointer; }
+        .header h1 { font-size: 1.2rem; font-weight: 600; }
+
+        /* Content Area */
+        .content-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 20px 15px; width: 100%; }
+
+        /* Info Section */
+        .info-section { text-align: center; margin-bottom: 20px; width: 100%; }
+        .info-icon { width: 60px; height: 60px; background: #e0f7fa; color: var(--accent); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 25px; margin-bottom: 10px; }
+        .info-section h2 { font-size: 1.1rem; color: var(--text-dark); }
+        .info-section p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Form Card */
+        .form-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 20px; width: 100%; }
+        
+        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .text-input, .font-select { width: 100%; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); }
+        .text-input { height: 80px; resize: none; background: var(--white); }
+        .text-input:focus, .font-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1); }
+
+        /* Preview Box */
+        .preview-box { background: #f8fafc; border: 2px dashed var(--accent); padding: 15px; border-radius: 12px; min-height: 70px; text-align: center; display: flex; justify-content: center; align-items: center; word-break: break-all; font-size: 1.2rem; color: var(--text-dark); margin-bottom: 20px; }
+        .preview-placeholder { color: #cbd5e1; font-size: 0.9rem; }
+
+        /* Target Number inputs */
+        .phone-input-wrapper { display: flex; gap: 8px; width: 100%; }
+        .country-code { width: 85px; flex-shrink: 0; padding: 12px 5px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); text-align: center; }
+        .phone-number { flex: 1; min-width: 0; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; color: var(--text-dark); outline: none; transition: 0.3s; }
+        .phone-number:focus, .country-code:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.1); }
+
+        /* Action Buttons */
+        .btn-group { display: flex; gap: 10px; width: 100%; margin-top: 20px; }
+        
+        .btn-send { flex: 2; background: var(--primary); color: var(--white); border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(18, 140, 126, 0.3); }
+        .btn-send:active { transform: scale(0.96); background: var(--primary-dark); }
+        
+        .btn-copy { flex: 1; background: var(--white); color: var(--text-dark); border: 1.5px solid var(--border); padding: 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-copy:active { transform: scale(0.96); background: #e2e8f0; }
+
+        .error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 5px; display: none; }
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); background: #323232; color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); white-space: nowrap; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="header">
+            <a href="index.html" style="color: white;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Fancy Fonts</h1>
+        </div>
+
+        <div class="content-area">
+            
+            <div class="info-section">
+                <div class="info-icon"><i class="fa-solid fa-font"></i></div>
+                <h2>Stylish Text Generator</h2>
+                <p>Convert your normal text into 60+ cool fonts & designs.</p>
+            </div>
+
+            <div class="form-card">
+                
+                <div class="input-group">
+                    <label>Enter your message</label>
+                    <textarea id="inputText" class="text-input" placeholder="Type here..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Select Font Style (50+ Options)</label>
+                    <select id="fontSelect" class="font-select">
+                        <optgroup label="Popular Fonts">
+                            <option value="bold">𝗕𝗼𝗹𝗱</option>
+                            <option value="italic">𝘐𝘵𝘢𝘭𝘪𝘤</option>
+                            <option value="boldItalic">𝘽𝙤𝙡𝙙 𝙄𝙩𝙖𝙡𝙞𝙘</option>
+                            <option value="script">𝒮𝒸𝓇𝒾𝓅𝓉</option>
+                            <option value="scriptBold">𝓢𝓬𝓻𝓲𝓹𝓽 𝓑𝓸𝓵𝓭</option>
+                            <option value="fraktur">𝔉𝔯𝔞𝔨𝔱𝔲𝔯</option>
+                            <option value="frakturBold">𝕱𝖗𝖆𝖐𝖙𝖚𝖗 𝕭𝖔𝖑𝖉</option>
+                            <option value="doubleStruck">𝔻𝕠𝕦𝕓𝕝𝕖 𝕊𝕥𝕣𝕦𝕔𝕜</option>
+                            <option value="monospace">𝙼𝚘𝚗𝚘𝚜𝚙𝚊𝚌𝚎</option>
+                        </optgroup>
+                        <optgroup label="Shapes & Enclosures">
+                            <option value="circled">Ⓒⓘⓡⓒⓛⓔⓓ</option>
+                            <option value="negativeCircled">🅝🅔🅖 🅒ⓘⓡⓒⓛⓔ</option>
+                            <option value="squared">🅂🅀🅄🄰🅁🄴🄳</option>
+                            <option value="negativeSquared">🆂🆀🆄🅰🆁🅴🅳</option>
+                            <option value="parenthesized">⒫⒜⒭⒠⒩</option>
+                        </optgroup>
+                        <optgroup label="Special Text">
+                            <option value="smallCaps">Sᴍᴀʟʟ Cᴀᴘs</option>
+                            <option value="upsideDown">Uｐｓｉｄｅ Dｏｗｎ</option>
+                            <option value="strike">S̶t̶r̶i̶k̶e̶t̶h̶r̶o̶u̶g̶h̶</option>
+                            <option value="slash">S̷l̷a̷s̷h̷</option>
+                            <option value="underline">U̲n̲d̲e̲r̲l̲i̲n̲e̲</option>
+                            <option value="wave">W̴a̴v̴e̴</option>
+                            <option value="stinky">S̾t̾i̾n̾k̾y̾</option>
+                            <option value="zalgo">Z̶̺̿ǎ̷͜l̵̦̚g̷͍̔o̵͇͝</option>
+                        </optgroup>
+                        <optgroup label="Decorative Borders (30+ Designs)">
+                            </optgroup>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Live Preview</label>
+                    <div class="preview-box" id="previewBox">
+                        <span class="preview-placeholder">Your stylish text will appear here...</span>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 30px;">
+                    <label>Send To WhatsApp Number</label>
+                    <div class="phone-input-wrapper">
+                        <select id="countryCode" class="country-code">
+                            <option value="+92">+92 (PK)</option>
+                            <option value="+91">+91 (IN)</option>
+                            <option value="+880">+880 (BD)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+44">+44 (UK)</option>
+                        </select>
+                        <input type="tel" id="phoneNumber" class="phone-number" placeholder="300 1234567" autocomplete="off">
+                    </div>
+                    <div id="errorText" class="error-msg">Please enter a number and message.</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-copy" onclick="copyText()">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                    <button class="btn-send" onclick="sendToWhatsApp()">
+                        <i class="fa-brands fa-whatsapp"></i> Direct Send
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i> Font copied to clipboard!</div>
+
+    <script>
+        // ----------------------------------------------------
+        // FONT GENERATION LOGIC (Data Dictionaries)
+        // ----------------------------------------------------
+        const normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        
+        const fontMaps = {
+            bold: "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵",
+            italic: "𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻0123456789",
+            boldItalic: "𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯0123456789",
+            script: "𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏0123456789",
+            scriptBold: "𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃0123456789",
+            fraktur: "𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜 standard𝔷𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷0123456789",
+            frakturBold: "𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟0123456789",
+            doubleStruck: "𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫𝟘𝟙𝟚𝟛𝟟𝟝𝟞𝟟𝟠𝟡",
+            monospace: "𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿",
+            circled: "ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ⓪①②③④⑤⑥⑦⑧⑨",
+            negativeCircled: "🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩⓿❶❷❸❹❺❻❼❽❾",
+            squared: "🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉0123456789",
+            negativeSquared: "🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉🅰🅱🅲🅳🅴🅵🅶🅷🅸🅹🅺🅻🅼🅽🅾🅿🆀🆁🆂🆃🆄🆅🆆🆇🆈🆉0123456789",
+            parenthesized: "⒜⒝⒞⒟⒠⒡⒢⒣⒤⒥⒦⒧⒨⒩⒪⒫⒬⒭⒮⒯⒰⒱⒲⒳⒴⒵⒜⒝⒞⒟⒠⒡⒢⒣⒤⒥⒦⒧⒨⒩⒪⒫⒬⒭⒮⒯⒰⒱⒲⒳⒴⒵⑴⑵⑶⑷⑸⑹⒧⒨⒩",
+            smallCaps: "AʙᴄᴅᴇғɢʜIᴊᴋʟᴍɴoᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ0123456789",
+            upsideDown: "∀qƆpƎℲפHIſʞ˥WNOԀQᴚS⊥∩ΛMX⅄Zɐqɔpǝɟƃɥıɾʞlɯuodbɹsʇnʌʍxʎz0123456789"
+        };
+
+        const decorators = [
+            { name: "Stars", wrapper: "★ {text} ★" },
+            { name: "Sparkles", wrapper: "✨ {text} ✨" },
+            { name: "Hearts", wrapper: "♥ {text} ♥" },
+            { name: "Crown", wrapper: "♔ {text} ♔" },
+            { name: "Music", wrapper: "♫ {text} ♫" },
+            { name: "Flowers", wrapper: "✿ {text} ✿" },
+            { name: "Wings", wrapper: "꧁༺ {text} ༻꧂" },
+            { name: "Arrows", wrapper: "《 {text} 》" },
+            { name: "Diamond", wrapper: "❖ {text} ❖" },
+            { name: "Lines", wrapper: "─═ {text} ═─" },
+            { name: "Dots", wrapper: "•´¯`•. {text} .•´¯`•" },
+            { name: "Cross", wrapper: "✙ {text} ✙" },
+            { name: "Fire", wrapper: "🔥 {text} 🔥" },
+            { name: "Brackets", wrapper: "【 {text} 】" },
+            { name: "Double Brackets", wrapper: "〚 {text} 〛" },
+            { name: "Fancy Border 1", wrapper: "๑۞๑,¸¸,ø¤º°`°๑۩ {text} ๑۩ ,¸¸,ø¤º°`°๑۞๑" },
+            { name: "Fancy Border 2", wrapper: "ıllıllı {text} ıllıllı" },
+            { name: "Fancy Border 3", wrapper: "╰☆☆ {text} ☆☆╮" },
+            { name: "Fancy Border 4", wrapper: "＊*•̩̩͙✩•̩̩͙*˚ {text} ˚*•̩̩͙✩•̩̩͙*＊" },
+            { name: "Fancy Border 5", wrapper: "★彡 {text} 彡★" },
+            { name: "Fancy Border 6", wrapper: "•?((¯°·._.• {text} •._.·°¯))؟•" },
+            { name: "Fancy Border 7", wrapper: "×º°”˜`”°º× {text} ×º°”˜`”°º×" },
+            { name: "Fancy Border 8", wrapper: "..♩.¸¸♬´¯`♬.¸¸¤ {text} ¤¸¸.♬´¯`♬¸¸.♩.." },
+            { name: "Fancy Border 9", wrapper: "•°¯`•• {text} ••´¯°•" },
+            { name: "Fancy Border 10", wrapper: "▂ ▄ ▅ ▆ ▇ █ {text} █ ▇ ▆ ▅ ▄ ▂" },
+            { name: "Fancy Border 11", wrapper: "▀▄▀▄▀▄ {text} ▄▀▄▀▄▀" },
+            { name: "Fancy Border 12", wrapper: "▌│█║▌║▌║ {text} ║▌║▌║█│▌" },
+            { name: "Fancy Border 13", wrapper: "☆✼★━━━━━━━━━━━━★✼☆ {text} ☆✼★━━━━━━━━━━━━★✼☆" },
+            { name: "Fancy Border 14", wrapper: "♡♥♡♥♡ {text} ♡♥♡♥♡" },
+            { name: "Fancy Border 15", wrapper: "°o.O {text} O.o°" }
+        ];
+
+        // Combine base mapping with combining diacritical marks (strike, underline etc)
+        const diacritics = {
+            strike: '\u0336',
+            slash: '\u0338',
+            underline: '\u0332',
+            wave: '\u0334',
+            stinky: '\u033E',
+            zalgo: '\u0310\u0325\u0346'
+        };
+
+        // ----------------------------------------------------
+        // INITIALIZATION & DYNAMIC DROPDOWN
+        // ----------------------------------------------------
+        const fontSelect = document.getElementById('fontSelect');
+        const inputText = document.getElementById('inputText');
+        const previewBox = document.getElementById('previewBox');
+        
+        let currentGeneratedText = "";
+
+        // Add 30 decorative borders to the select dropdown programmatically
+        const optgroup = fontSelect.querySelector('optgroup[label="Decorative Borders (30+ Designs)"]');
+        decorators.forEach((dec, index) => {
+            let option = document.createElement('option');
+            option.value = `dec_${index}`;
+            option.text = dec.wrapper.replace('{text}', dec.name);
+            optgroup.appendChild(option);
+        });
+
+        // ----------------------------------------------------
+        // LIVE PREVIEW LOGIC
+        // ----------------------------------------------------
+        function updatePreview() {
+            let text = inputText.value;
+            let style = fontSelect.value;
+            
+            if (text.length === 0) {
+                previewBox.innerHTML = '<span class="preview-placeholder">Your stylish text will appear here...</span>';
+                currentGeneratedText = "";
+                return;
+            }
+
+            let result = "";
+
+            // 1. If it's a character replacement map
+            if (fontMaps[style]) {
+                const map = fontMaps[style];
+                for (let i = 0; i < text.length; i++) {
+                    let char = text[i];
+                    let index = normalChars.indexOf(char);
+                    if (index !== -1) {
+                        result += Array.from(map)[index]; // Using Array.from to correctly handle surrogate pairs (emojis/unicode)
+                    } else {
+                        result += char;
+                    }
+                }
+            } 
+            // 2. If it's a combining diacritic (strike, underline)
+            else if (diacritics[style]) {
+                const mark = diacritics[style];
+                for (let i = 0; i < text.length; i++) {
+                    result += text[i] + mark;
+                }
+            }
+            // 3. If it's a Decorative Wrapper
+            else if (style.startsWith('dec_')) {
+                let decIndex = parseInt(style.split('_')[1]);
+                result = decorators[decIndex].wrapper.replace('{text}', text);
+            }
+
+            currentGeneratedText = result;
+            previewBox.innerText = result;
+        }
+
+        inputText.addEventListener('input', updatePreview);
+        fontSelect.addEventListener('change', updatePreview);
+
+        // ----------------------------------------------------
+        // SEND AND COPY LOGIC
+        // ----------------------------------------------------
+        const ccSelect = document.getElementById('countryCode');
+        const phoneInput = document.getElementById('phoneNumber');
+        const errorText = document.getElementById('errorText');
+
+        function sendToWhatsApp() {
+            let phone = phoneInput.value.replace(/\D/g, ''); 
+            
+            if (currentGeneratedText.trim() === "" || phone.length < 7) {
+                errorText.style.display = 'block';
+                return;
+            }
+            errorText.style.display = 'none';
+
+            let fullNumber = ccSelect.value.replace('+', '') + phone;
+            let waUrl = `whatsapp://send?phone=${fullNumber}&text=${encodeURIComponent(currentGeneratedText)}`;
+            
+            // Android Native Bridge Fallback
+            if (window.AndroidApp && window.AndroidApp.openDirectChat) {
+                window.AndroidApp.openDirectChat(fullNumber, currentGeneratedText);
+            } else {
+                window.location.href = waUrl;
+                setTimeout(() => {
+                    window.location.href = `https://wa.me/${fullNumber}?text=${encodeURIComponent(currentGeneratedText)}`;
+                }, 500);
+            }
+        }
+
+        function copyText() {
+            if (currentGeneratedText.trim() === "") return;
+            
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = currentGeneratedText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Phone Formatting
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, ''); 
+            if(this.value.length > 0) errorText.style.display = 'none';
+        });
+
+    </script>
+
+</body>
+</html>

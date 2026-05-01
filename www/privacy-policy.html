@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Privacy Policy - WA Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #128C7E;
+            --primary-dark: #075E54;
+            --bg-color: #f0f2f5;
+            --white: #ffffff;
+            --text-dark: #111b21;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+        }
+
+        /* Basic Reset & Screen Lock */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100vw; background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overflow-y: hidden; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; overflow-x: hidden; }
+
+        /* Header */
+        .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; width: 100%; }
+        .header i { font-size: 20px; cursor: pointer; }
+        .header h1 { font-size: 1.2rem; font-weight: 600; }
+
+        /* Content Area */
+        .content-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; width: 100%; background: var(--white); }
+
+        /* Policy Typography */
+        .policy-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .policy-header h2 { font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 5px; }
+        .policy-header p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .policy-section { margin-bottom: 25px; }
+        .policy-section h3 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .policy-section h3 i { color: var(--primary); font-size: 1rem; }
+        
+        .policy-section p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+        .policy-section ul { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-left: 20px; margin-bottom: 10px; }
+        .policy-section li { margin-bottom: 5px; }
+
+        /* AdMob Specific Highlight Box */
+        .admob-box { background: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 0 8px 8px 0; margin: 15px 0; }
+        .admob-box p { margin: 0; font-size: 0.85rem; color: #334155; }
+
+        .contact-email { display: inline-block; background: var(--bg-color); padding: 8px 15px; border-radius: 8px; font-weight: 600; color: var(--primary); margin-top: 5px; font-size: 0.9rem; }
+
+        /* Footer inside content */
+        .policy-footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .policy-footer p { font-size: 0.8rem; color: #94a3b8; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="header">
+            <a href="index.html" style="color: white;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Privacy Policy</h1>
+        </div>
+
+        <div class="content-area">
+            
+            <div class="policy-header">
+                <h2>Privacy Policy</h2>
+                <p>Last updated: May 01, 2026</p>
+            </div>
+
+            <div class="policy-section">
+                <p>This Privacy Policy explains how <strong>WA Toolkit</strong> ("we", "our", or "us") collects, uses, and protects your information when you use our mobile application. By using the App, you agree to the collection and use of information in accordance with this policy.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-database"></i> 1. Data Collection & Local Storage</h3>
+                <p>We highly respect your privacy. WA Toolkit is designed to function locally on your device. We <strong>do not</strong> collect, transmit, or store your personal messages, contacts, or media on our servers.</p>
+                <ul>
+                    <li><strong>Status Saver:</strong> Media files (images/videos) downloaded via the app are stored strictly on your device's local storage.</li>
+                    <li><strong>Deleted Messages:</strong> To provide this feature, the app requires <code>NotificationListenerService</code> access. Messages captured from notifications are saved entirely in your phone's local database. We have no access to them.</li>
+                    <li><strong>Direct Chat:</strong> Phone numbers entered for direct messaging are only saved in your local app history for your convenience and are never uploaded online.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-rectangle-ad"></i> 2. Advertising (Google AdMob)</h3>
+                <p>We use Google AdMob to display advertisements in our app to keep it free for users. AdMob is an advertising service provided by Google Inc.</p>
+                
+                <div class="admob-box">
+                    <p><strong>Google AdMob & Cookies:</strong> Google uses tracking technologies like cookies and device Advertising IDs (such as Android Advertising ID) to serve personalized ads based on your past visits to our app or other websites. Google's use of advertising cookies enables it and its partners to serve ads based on your browsing behavior.</p>
+                </div>
+                
+                <p><strong>Opting Out:</strong> You can opt out of personalized advertising by visiting your Android device settings: <em>Settings > Google > Ads > Opt out of Ads Personalization</em>. For more details on how Google uses your data, please visit the <a href="https://policies.google.com/privacy" target="_blank" style="color: var(--primary); font-weight: 500;">Google Privacy & Terms</a> page.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-chart-simple"></i> 3. Analytics & Crash Reports</h3>
+                <p>We may use third-party tools (like Google Analytics for Firebase) to collect non-personally identifiable information, such as your device model, operating system version, and crash logs. This helps us fix bugs and improve app performance. This data does not contain any of your personal chat data.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-shield-halved"></i> 4. App Permissions</h3>
+                <p>Our app requires certain permissions to function correctly:</p>
+                <ul>
+                    <li><strong>Storage / Manage External Storage:</strong> Required to fetch and save WhatsApp statuses to your gallery.</li>
+                    <li><strong>Notification Access:</strong> Required specifically for the "Deleted Messages" tool to read incoming notifications safely in the background.</li>
+                </ul>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-scale-balanced"></i> 5. Disclaimer</h3>
+                <p>WA Toolkit is an independent tool developed by us. It is not affiliated with, sponsored, authorized, or endorsed by WhatsApp Inc. or Meta Platforms, Inc. The "WhatsApp" name and logo are registered trademarks of WhatsApp Inc.</p>
+            </div>
+
+            <div class="policy-section">
+                <h3><i class="fa-solid fa-envelope"></i> 6. Contact Us</h3>
+                <p>If you have any questions or suggestions regarding our Privacy Policy, please feel free to contact us at:</p>
+                <div class="contact-email">your.email@gmail.com</div>
+            </div>
+
+            <div class="policy-footer">
+                <p>By continuing to use WA Toolkit, you acknowledge that you have read and understand this Privacy Policy.</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
