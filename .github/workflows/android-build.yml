@@ -1,0 +1,50 @@
+name: Build Android APK (Latest Tech)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Latest V4
+
+      - name: Set up Java 24
+        uses: actions/setup-java@v4 # Latest V4
+        with:
+          java-version: '24' # Java ka bilkul latest version
+          distribution: 'oracle' # Latest Java 24 ke liye Oracle distribution best hai
+          cache: gradle
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest' # Latest Stable Node.js
+
+      - name: Install Dependencies
+        run: |
+          npm install -g @capacitor/cli @capacitor/core
+          npm install
+
+      - name: Build Web App Structure
+        run: |
+          mkdir -p www
+          cp *.html www/ 2>/dev/null || true
+
+      - name: Sync & Update Capacitor
+        run: |
+          npx cap sync android
+
+      - name: Build APK with Latest Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Final APK
+        uses: actions/upload-artifact@v4 # Latest V4
+        with:
+          name: wa-toolkit-premium-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
