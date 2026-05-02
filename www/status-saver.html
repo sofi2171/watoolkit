@@ -44,6 +44,13 @@
     </div>
 
     <script>
+        let AppNativePlugin;
+        try {
+            AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
+        } catch (e) {
+            console.error(e);
+        }
+
         let realImages = []; let realVideos = [];
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -52,18 +59,11 @@
 
         async function loadStatuses() {
             try {
-                if (!window.Capacitor || !window.Capacitor.Plugins) {
-                    throw new Error("Capacitor core is not ready");
-                }
-                
-                // FIXED: registerPlugin hata kar seedha Plugins se call kiya
-                const nativeBridge = window.Capacitor.Plugins.AppNativePlugin;
-                
-                if (!nativeBridge) {
+                if (!AppNativePlugin) {
                     throw new Error("AppNativePlugin not found in Capacitor Plugins");
                 }
 
-                const result = await nativeBridge.getStatuses();
+                const result = await AppNativePlugin.getStatuses();
                 
                 realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
                 realVideos = result.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));

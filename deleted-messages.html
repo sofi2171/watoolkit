@@ -30,20 +30,19 @@
     </div>
 
     <script>
+        let AppNativePlugin;
+        try {
+            AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
+        } catch (e) {
+            console.error(e);
+        }
+
         async function requestPermission() {
             try {
-                if (!window.Capacitor || !window.Capacitor.Plugins) {
-                    throw new Error("Capacitor core is not ready");
-                }
-
-                // FIXED: registerPlugin hata kar seedha Plugins se call kiya
-                const nativeBridge = window.Capacitor.Plugins.AppNativePlugin;
-                
-                if (!nativeBridge) {
+                if (!AppNativePlugin) {
                     throw new Error("AppNativePlugin not found in Capacitor Plugins");
                 }
-
-                await nativeBridge.openNotificationSettings();
+                await AppNativePlugin.openNotificationSettings();
             } catch (err) {
                 alert("Error Details: " + err.message);
             }
