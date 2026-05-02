@@ -1,4 +1,22 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+// 1. Manifest mein Permission add karna
+const manifestPath = './android/app/src/main/AndroidManifest.xml';
+if (fs.existsSync(manifestPath)) {
+    let manifest = fs.readFileSync(manifestPath, 'utf8');
+    if (!manifest.includes('MANAGE_EXTERNAL_STORAGE')) {
+        const permissions = `
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />`;
+        manifest = manifest.replace('</manifest>', permissions + '\n</manifest>');
+        fs.writeFileSync(manifestPath, manifest);
+        console.log('✅ Permissions Added to AndroidManifest.xml!');
+    }
+}
+
+// 2. Status Saver ka mukammal HTML/JS Code
+const htmlCode = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -86,12 +104,12 @@
                 card.className = 'card';
                 
                 if(currentTab === 'images') {
-                    card.innerHTML = `<img src="${src}" onclick="viewMedia('${src}', 'image')">`;
+                    card.innerHTML = \`<img src="\${src}" onclick="viewMedia('\${src}', 'image')">\`;
                 } else {
-                    card.innerHTML = `<video src="${src}#t=0.1" preload="metadata" onclick="viewMedia('${src}', 'video')"></video><div class="play-icon">▶</div>`;
+                    card.innerHTML = \`<video src="\${src}#t=0.1" preload="metadata" onclick="viewMedia('\${src}', 'video')"></video><div class="play-icon">▶</div>\`;
                 }
 
-                card.innerHTML += `<button class="download-btn" onclick="downloadMedia('${file.uri}', '${file.name}')">⬇</button>`;
+                card.innerHTML += \`<button class="download-btn" onclick="downloadMedia('\${file.uri}', '\${file.name}')">⬇</button>\`;
                 container.appendChild(card);
             });
         }
@@ -121,12 +139,15 @@
             viewer.appendChild(closeBtn);
 
             if(type === 'image') {
-                viewer.innerHTML += `<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+                viewer.innerHTML += \`<img src="\${src}" style="max-width:100%; max-height:100%; object-fit:contain;">\`;
             } else {
-                viewer.innerHTML += `<video src="${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain;"></video>`;
+                viewer.innerHTML += \`<video src="\${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain;"></video>\`;
             }
             document.body.appendChild(viewer);
         }
     </script>
 </body>
-</html>
+</html>`;
+
+fs.writeFileSync('./www/status-saver.html', htmlCode);
+console.log('✅ status-saver.html successfully generated!');
