@@ -2,20 +2,21 @@ package com.sufian.watoolkit;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.JSObject;
-import org.json.JSONArray;
-import java.io.File;
 
 public class MainActivity extends BridgeActivity {
+
+    public static Uri pickedFolderUri = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,56 +25,36 @@ public class MainActivity extends BridgeActivity {
 
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
+
+        ActivityResultLauncher<Intent> folderPicker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getData() != null) {
+                    pickedFolderUri = result.getData().getData();
+                }
+            });
+
         @PluginMethod
-        public void getStatuses(PluginCall call) {
-            JSObject ret = new JSObject();
-            JSONArray statusArray = new JSONArray();
+        public void pickStatusFolder(PluginCall call) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (!Environment.isExternalStorageManager()) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        getContext().startActivity(intent);
-                        call.reject("needs_permission");
-                        return;
-                    }
-                }
-                String base = Environment.getExternalStorageDirectory().getAbsolutePath();
-                String[] paths = {
-                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
-                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
-                    base + "/WhatsApp/Media/.Statuses",
-                    base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
-                    base + "/WhatsApp Business/Media/.Statuses"
-                };
-                for (String p : paths) {
-                    File dir = new File(p);
-                    if (dir.exists() && dir.isDirectory()) {
-                        File[] files = dir.listFiles();
-                        if (files != null) {
-                            for (File f : files) {
-                                String n = f.getName().toLowerCase();
-                                if (f.isFile() && (n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".mp4"))) {
-                                    statusArray.put(f.getAbsolutePath());
-                                }
-                            }
-                        }
-                    }
-                }
-                ret.put("statuses", statusArray);
-                call.resolve(ret);
-            } catch (Exception e) { call.reject(e.getMessage()); }
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                folderPicker.launch(intent);
+                call.resolve();
+            } catch (Exception e) {
+                call.reject("Error opening picker");
+            }
         }
 
         @PluginMethod
-        public void openNotificationSettings(PluginCall call) {
-            try {
-                Intent i = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getContext().startActivity(i);
-                call.resolve();
-            } catch (Exception e) { call.reject("Error opening settings"); }
+        public void getPickedFolder(PluginCall call) {
+            JSObject ret = new JSObject();
+            if (pickedFolderUri != null) {
+                ret.put("uri", pickedFolderUri.toString());
+                call.resolve(ret);
+            } else {
+                call.reject("No folder selected");
+            }
         }
     }
 }
