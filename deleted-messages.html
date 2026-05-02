@@ -30,15 +30,13 @@
     </div>
 
     <script>
+        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
+
         async function requestPermission() {
             try {
-                if (!window.Capacitor) throw new Error("Capacitor Missing");
-                
-                const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
                 await AppNativePlugin.openNotificationSettings();
-                
             } catch (err) {
-                alert("Please go to Settings > Notifications manually. Plugin load failed.");
+                alert("Error Details: " + err.message);
             }
         }
     </script>
