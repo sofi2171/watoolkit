@@ -29,7 +29,7 @@ public class MainActivity extends BridgeActivity {
             JSObject ret = new JSObject();
             JSONArray statusArray = new JSONArray();
             try {
-                // Android 11+ All Files Access Check
+                // Android 11+ Permission Check
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     if (!Environment.isExternalStorageManager()) {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -41,11 +41,14 @@ public class MainActivity extends BridgeActivity {
                     }
                 }
 
+                // سفیان بھائی، ہم یہاں ہر ممکن پاتھ چیک کریں گے
                 String base = Environment.getExternalStorageDirectory().getAbsolutePath();
                 String[] paths = {
                     base + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
                     base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
-                    base + "/WhatsApp/Media/.Statuses"
+                    base + "/WhatsApp/Media/.Statuses",
+                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
+                    base + "/WhatsApp/Media/.statuses"
                 };
 
                 for (String p : paths) {
@@ -54,7 +57,7 @@ public class MainActivity extends BridgeActivity {
                         File[] files = dir.listFiles();
                         if (files != null) {
                             for (File f : files) {
-                                if (f.isFile() && (f.getName().endsWith(".jpg") || f.getName().endsWith(".mp4"))) {
+                                if (f.isFile() && (f.getName().endsWith(".jpg") || f.getName().endsWith(".mp4") || f.getName().endsWith(".jpeg"))) {
                                     statusArray.put(f.getAbsolutePath());
                                 }
                             }
