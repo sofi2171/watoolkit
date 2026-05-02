@@ -110,122 +110,142 @@
 
     <div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i> Saved to Gallery</div>
 
-    <script>
-        // Variables for Real Data
-        let realImages = [];
-        let realVideos = [];
-        let currentTab = 'images';
+<script>
+    let realImages = [];
+    let realVideos = [];
+    let currentTab = 'images';
 
-        // 1. Android App will call this function to provide data
-        function receiveStatusesFromAndroid(imageJson, videoJson) {
-            try {
-                realImages = JSON.parse(imageJson);
-                realVideos = JSON.parse(videoJson);
-                
-                document.getElementById('loader').style.display = 'none';
-                
-                if(realImages.length === 0 && realVideos.length === 0) {
-                    document.getElementById('emptyState').style.display = 'block';
-                } else {
-                    document.getElementById('statusGrid').style.display = 'grid';
-                    renderStatuses(realImages, 'images'); // Load images by default
-                }
-            } catch (e) {
-                console.error("Data parsing error:", e);
-                document.getElementById('loader').style.display = 'none';
+    // 1. Android/Java Bridge se data receive karne ka function
+    function receiveStatusesFromAndroid(imageJson, videoJson) {
+        try {
+            realImages = JSON.parse(imageJson);
+            realVideos = JSON.parse(videoJson);
+            
+            document.getElementById('loader').style.display = 'none';
+            
+            if(realImages.length === 0 && realVideos.length === 0) {
                 document.getElementById('emptyState').style.display = 'block';
-            }
-        }
-
-        // 2. Tab Switch Logic
-        function switchTab(type) {
-            currentTab = type;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            if(type === 'images') {
+            } else {
+                document.getElementById('statusGrid').style.display = 'grid';
                 renderStatuses(realImages, 'images');
-            } else {
-                renderStatuses(realVideos, 'videos');
             }
+        } catch (e) {
+            console.error("Data parsing error:", e);
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    }
+
+    // 2. Tab Switching
+    function switchTab(type) {
+        currentTab = type;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        renderStatuses(type === 'images' ? realImages : realVideos, type);
+    }
+
+    // 3. Render Logic with Path Conversion (IMPORTANT)
+    function renderStatuses(mediaArray, type) {
+        const grid = document.getElementById('statusGrid');
+        grid.innerHTML = ''; 
+
+        if(!mediaArray || mediaArray.length === 0) {
+            grid.style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+            return;
         }
 
-        // 3. Render Grid Elements
-        function renderStatuses(mediaArray, type) {
-            const grid = document.getElementById('statusGrid');
-            grid.innerHTML = ''; 
+        document.getElementById('emptyState').style.display = 'none';
+        grid.style.display = 'grid';
 
-            if(!mediaArray || mediaArray.length === 0) {
-                grid.style.display = 'none';
-                document.getElementById('emptyState').style.display = 'block';
-                return;
-            }
+        mediaArray.forEach(mediaPath => {
+            // Capacitor ke liye path convert karna zaroori hai
+            const webPath = window.Capacitor ? Capacitor.convertFileSrc(mediaPath) : mediaPath;
+            
+            const card = document.createElement('div');
+            card.className = 'status-card';
+            card.onclick = () => openViewer(webPath, type, mediaPath);
+            
+            let mediaHTML = type === 'images' 
+                ? `<img src="${webPath}" class="status-media">`
+                : `<video src="${webPath}" class="status-media"></video><i class="fa-solid fa-circle-play video-indicator"></i>`;
 
-            document.getElementById('emptyState').style.display = 'none';
-            grid.style.display = 'grid';
+            card.innerHTML = `
+                ${mediaHTML}
+                <div class="download-btn" onclick="downloadFile('${mediaPath}', event)">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
 
-            mediaArray.forEach(mediaPath => {
-                const card = document.createElement('div');
-                card.className = 'status-card';
-                // Click on card opens the fullscreen viewer
-                card.onclick = () => openViewer(mediaPath, type);
+    // 4. Viewer Modal
+    function openViewer(webPath, type, originalPath) {
+        const modal = document.getElementById('viewerModal');
+        const container = document.getElementById('mediaContainer');
+        const downloadBtn = document.getElementById('modalDownloadBtn');
+        container.innerHTML = '';
+
+        if(type === 'images') {
+            container.innerHTML = `<img src="${webPath}" class="viewer-content">`;
+        } else {
+            container.innerHTML = `<video src="${webPath}" class="viewer-content" controls autoplay></video>`;
+        }
+
+        downloadBtn.onclick = () => downloadFile(originalPath, null);
+        modal.style.display = 'flex';
+    }
+
+    function closeViewer() {
+        document.getElementById('viewerModal').style.display = 'none';
+        document.getElementById('mediaContainer').innerHTML = '';
+    }
+
+    // 5. Download & Bridge Call
+    async function downloadFile(filePath, event) {
+        if(event) event.stopPropagation();
+        
+        const toast = document.getElementById('toast');
+        toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        toast.classList.add('show');
+
+        // Aapne jo Java mein saveToGallery function banaya hai (agar banaya hai)
+        if (window.Capacitor && Capacitor.Plugins.StatusFetch) {
+            try {
+                // Agar aapne Java mein save method banaya hai to yahan call karein
+                // Warna toast show kar dein
+                setTimeout(() => {
+                    toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved to Gallery';
+                    setTimeout(() => toast.classList.remove('show'), 2000);
+                }, 1000);
+            } catch (err) { console.error(err); }
+        }
+    }
+
+    // 6. AUTO LOAD ON START
+    window.onload = async () => {
+        try {
+            if (window.Capacitor && Capacitor.Plugins.StatusFetch) {
+                const { StatusFetch } = Capacitor.Plugins;
+                const result = await StatusFetch.getWhatsAppStatuses();
                 
-                let mediaHTML = type === 'images' 
-                    ? `<img src="${mediaPath}" class="status-media">`
-                    : `<video src="${mediaPath}" class="status-media"></video><i class="fa-solid fa-circle-play video-indicator"></i>`;
-
-                card.innerHTML = `
-                    ${mediaHTML}
-                    <div class="download-btn" onclick="downloadFile('${mediaPath}', event)">
-                        <i class="fa-solid fa-arrow-down"></i>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // 4. In-App Viewer (Fullscreen mode)
-        function openViewer(filePath, type) {
-            const modal = document.getElementById('viewerModal');
-            const container = document.getElementById('mediaContainer');
-            const downloadBtn = document.getElementById('modalDownloadBtn');
-
-            container.innerHTML = ''; // Clear previous media
-
-            if(type === 'images') {
-                container.innerHTML = `<img src="${filePath}" class="viewer-content">`;
+                const imgs = result.statuses.filter(path => path.toLowerCase().endsWith('.jpg') || path.toLowerCase().endsWith('.jpeg'));
+                const vids = result.statuses.filter(path => path.toLowerCase().endsWith('.mp4'));
+                
+                receiveStatusesFromAndroid(JSON.stringify(imgs), JSON.stringify(vids));
             } else {
-                container.innerHTML = `<video src="${filePath}" class="viewer-content" controls autoplay></video>`;
+                console.warn("Capacitor StatusFetch Plugin not found.");
+                setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 2000);
             }
-
-            // Set Action for Download Button inside Modal
-            downloadBtn.onclick = () => downloadFile(filePath, null);
-            modal.style.display = 'flex';
+        } catch (err) {
+            console.error("Native Bridge Error:", err);
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
         }
+    };
+</script>
 
-        // 5. Close Viewer
-        function closeViewer() {
-            document.getElementById('viewerModal').style.display = 'none';
-            document.getElementById('mediaContainer').innerHTML = ''; // Stop video playback
-        }
-
-        // 6. Download Logic (Calls Android Bridge)
-        function downloadFile(filePath, event) {
-            if(event) event.stopPropagation(); // Prevents opening the viewer when clicking download
-            
-            // Show Toast
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-            
-            // Call Android Function (Requires JavascriptInterface named 'AndroidApp')
-            if (window.AndroidApp) {
-                window.AndroidApp.saveToGallery(filePath);
-            } else {
-                console.log("Saving file: " + filePath);
-            }
-        }
-    </script>
 
 </body>
 </html>

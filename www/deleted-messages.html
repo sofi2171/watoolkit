@@ -183,22 +183,31 @@
         // ==========================================
 
         // 1. App load hotay hi Android se pocho ke permission on hai ya nahi?
-        window.onload = () => {
-            if (window.AndroidApp && window.AndroidApp.isNotificationAccessGranted) {
-                hasPermission = window.AndroidApp.isNotificationAccessGranted();
-            }
+// User ke wapis aate hi auto-check karne ke liye
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        if (window.AndroidApp && window.AndroidApp.isNotificationAccessGranted) {
+            hasPermission = window.AndroidApp.isNotificationAccessGranted();
             updateUIState();
-        };
-
-        // 2. User Jab "Turn On" dabaye toh Android ko bolo Settings kholay
-        function requestPermission() {
-            if (window.AndroidApp && window.AndroidApp.openNotificationSettings) {
-                window.AndroidApp.openNotificationSettings();
-            } else {
-                alert("Testing Mode: Opening Phone's Notification Settings...");
-                simulatePermissionGranted(); // For web testing
-            }
         }
+    }
+});
+// NEW FIXED FUNCTION
+async function requestPermission() {
+    try {
+        if (window.AndroidApp && window.AndroidApp.openNotificationSettings) {
+            window.AndroidApp.openNotificationSettings();
+        } else {
+            // Agar bridge na milay (Testing ke liye)
+            console.log("Testing Mode Triggered");
+            alert("Opening Notification Settings...");
+            simulatePermissionGranted(); 
+        }
+    } catch (err) {
+        console.error("Settings open karne mein error:", err);
+    }
+}
+
 
         // 3. Jab Android Notification pakray ga, toh wo ye function call karega!
         function receiveMessageFromAndroid(senderName, messageText, time, isDeletedStr) {
