@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deleted Messages Pro</title>
+    <title>Recover Messages Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #ece5dd; }
-        /* Professional WhatsApp Green Header */
+        
+        /* Professional WhatsApp Header */
         header { background: #075e54; color: white; padding: 15px; display: flex; align-items: center; font-size: 19px; font-weight: 600; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.2);}
         .back-btn { cursor: pointer; font-size: 20px; margin-right: 15px; padding: 5px; }
         
         /* Permission Box Styling */
-        #permission-box { text-align: center; padding: 50px 20px; background: white; margin: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #permission-box { text-align: center; padding: 40px 20px; background: white; margin: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none;}
         .icon-bell { font-size: 60px; color: #128c7e; margin-bottom: 15px; }
         .btn-allow { background: #25d366; color: white; padding: 12px 25px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 15px; cursor: pointer; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
@@ -25,40 +26,40 @@
         .msg-text { color: #444; font-size: 14px; margin-top: 5px; word-wrap: break-word; }
         .deleted-tag { font-size: 11px; color: #d9534f; border: 1px solid #d9534f; padding: 2px 6px; border-radius: 10px; width: fit-content; margin-top: 8px; background: #fdf0f0;}
         
-        /* Empty State */
+        /* Loading & Empty State */
         #empty-state { text-align: center; padding: 50px 20px; display: none; color: #666;}
-        #loading { text-align: center; padding: 30px; display: none; color: #075e54; font-weight: bold;}
+        #loading { text-align: center; padding: 30px; display: block; color: #075e54; font-weight: bold;}
     </style>
 </head>
 <body>
 
     <header>
         <i class="fas fa-arrow-left back-btn" onclick="window.location.href='index.html'"></i>
-        Recover Messages
+        Recovered Messages
     </header>
 
     <div id="permission-box">
         <i class="fas fa-bell-slash icon-bell"></i>
         <h2 style="margin:0; color:#333;">Service is Off</h2>
-        <p style="color:#666; font-size:14px; line-height:1.5; margin-top:10px;">To read deleted messages, please allow Notification Access for WA Toolkit.</p>
+        <p style="color:#666; font-size:14px; line-height:1.5; margin-top:10px;">To catch deleted messages automatically, we need Notification Access.</p>
         <button class="btn-allow" onclick="openSettings()">Turn On Service</button>
     </div>
 
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Checking Messages...</div>
+    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Checking Permissions...</div>
 
     <div id="empty-state">
         <i class="fas fa-comment-dots" style="font-size: 50px; color:#ccc; margin-bottom:15px;"></i>
-        <h3>No Messages Yet</h3>
-        <p style="font-size: 14px;">Waiting for new incoming messages...<br>App will automatically save them here.</p>
+        <h3>No Deleted Messages</h3>
+        <p style="font-size: 14px;">Waiting for new incoming messages...<br>App is monitoring in the background.</p>
     </div>
 
     <div id="chat-container"></div>
 
     <script>
-        // 🚀 AUTO REFRESH FIX: Jab user permission de kar wapas aaye
+        // 🚀 AUTO-REFRESH FIX: Jab user settings se wapas aaye toh page khud reload ho jaye
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") {
-                setTimeout(() => { checkPermissionAndLoad(); }, 500);
+                checkPermissionAndLoad();
             }
         });
 
@@ -66,16 +67,26 @@
             checkPermissionAndLoad();
         };
 
-        function openSettings() {
-            // Capacitor Native Plugin ya Intent ke zariye Notification Settings open karna
+        // 🚀 DIRECT SETTINGS OPEN FIX
+        async function openSettings() {
             try {
-                if (window.Capacitor && window.Capacitor.Plugins.NotificationListener) {
-                    window.Capacitor.Plugins.NotificationListener.requestPermission();
+                // Pehla tareeqa: Capacitor Native Settings Plugin
+                if (window.Capacitor && window.Capacitor.Plugins.NativeSettings) {
+                    await window.Capacitor.Plugins.NativeSettings.open({
+                        option: 'notification_listener' // Ye Android ki Notification Access screen kholta hai
+                    });
                 } else {
-                    alert("Please open phone Settings > Notifications > Device & App Notifications and allow WA Toolkit.");
+                    throw new Error("Plugin not found, trying Intent...");
                 }
             } catch (e) {
-                alert("Please manually allow Notification Access from settings.");
+                // Doosra tareeqa: Direct Android Intent (Fallback)
+                console.log("Using Intent Fallback");
+                window.location.href = "intent:#Intent;action=android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS;end";
+                
+                // Agar dono kaam na karein (bohat purana mobile ho)
+                setTimeout(() => {
+                    alert("Please go to Settings > Notifications > Device & App Notifications and allow WA Toolkit.");
+                }, 1500);
             }
         }
 
@@ -90,20 +101,19 @@
             emptyState.style.display = 'none';
             loading.style.display = 'block';
 
-            // Yahan hum check karte hain ke Notification permission mili ya nahi
-            // (Aapke native plugin ka function yahan call hoga)
             let hasPermission = false;
             
             try {
+                // Apne native plugin ka permission check yahan chalayein
                 if (window.Capacitor && window.Capacitor.Plugins.NotificationListener) {
                     const status = await window.Capacitor.Plugins.NotificationListener.checkPermission();
                     hasPermission = status.granted;
                 } else {
-                    // Fallback test logic agar plugin load nahi hua
+                    // Test Logic: Agar plugin abhi link nahi hua toh LocalStorage se test karein
                     hasPermission = localStorage.getItem("temp_perm_granted") === "true"; 
                 }
             } catch (e) {
-                console.log("Plugin error", e);
+                console.log("Permission check error", e);
             }
 
             loading.style.display = 'none';
@@ -119,17 +129,15 @@
             const chatContainer = document.getElementById('chat-container');
             const emptyState = document.getElementById('empty-state');
             
-            chatContainer.innerHTML = ''; // Clear purana data
+            chatContainer.innerHTML = ''; 
 
-            // ⚠️ ATTENTION: Yeh Data aapki NATIVE DATABASE (SQLite/SharedPrefs) se aayega.
-            // Main yahan ek dummy structure bana raha hoon taake aapko design nazar aaye.
-            // Aapko apne plugin ke read function yahan connect karne honge.
-            
             let messages = []; 
             try {
+                // ⚠️ REAL DATA CONNECTION:
+                // Yahan aapki background service (SQLite) se data aayega.
                 // Example: messages = await window.Capacitor.Plugins.NotificationDatabase.getMessages();
                 
-                // Demo Data (Check karne ke liye)
+                // Testing data (Jab tak Java plugin poori tarah set na ho jaye)
                 const savedData = localStorage.getItem('wa_messages');
                 if(savedData) messages = JSON.parse(savedData);
                 
@@ -144,7 +152,6 @@
                 emptyState.style.display = 'none';
                 chatContainer.style.display = 'block';
 
-                // Naye messages upar dikhane ke liye reverse kiya hai
                 messages.reverse().forEach(msg => {
                     const card = document.createElement('div');
                     card.className = 'chat-card';
@@ -153,24 +160,22 @@
 
                     card.innerHTML = `
                         <div class="chat-header">
-                            <div class="sender-name"><i class="fas fa-user-circle" style="color:#aaa; margin-right:5px;"></i> ${msg.sender || 'Unknown Number'}</div>
+                            <div class="sender-name"><i class="fab fa-whatsapp" style="color:#25d366; margin-right:5px;"></i> ${msg.sender || 'Unknown'}</div>
                             <div class="msg-time">${timeString}</div>
                         </div>
                         <div class="msg-text">${msg.text || 'Photo/Video message'}</div>
-                        <div class="deleted-tag"><i class="fas fa-trash-alt"></i> Recovered</div>
+                        <div class="deleted-tag"><i class="fas fa-trash-alt"></i> Deleted & Recovered</div>
                     `;
                     chatContainer.appendChild(card);
                 });
             }
         }
 
-        // Demo Function: (Testing ke liye)
-        // console mein saveDemoMsg('Sufian', 'Bhai kahan ho?') likh kar check karein
-        function saveDemoMsg(name, text) {
-            let msgs = JSON.parse(localStorage.getItem('wa_messages') || '[]');
-            msgs.push({sender: name, text: text, timestamp: Date.now()});
+        // Teting ke liye Command (Browser Console mein run karne ke liye)
+        function testApp() {
+            localStorage.setItem("temp_perm_granted", "true");
+            let msgs = [{sender: "Sufian Bhai", text: "Design kaisa laga?", timestamp: Date.now()}];
             localStorage.setItem('wa_messages', JSON.stringify(msgs));
-            localStorage.setItem("temp_perm_granted", "true"); // force permission bypass for UI test
             location.reload();
         }
     </script>
