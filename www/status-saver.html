@@ -175,5 +175,19 @@
             }
         });
     </script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                    window.Capacitor.Plugins.App.addListener("appStateChange", ({ isActive }) => {
+                        if (isActive) {
+                            setTimeout(() => { location.reload(); }, 500);
+                        }
+                    });
+                }
+            }, 1000);
+        });
+    </script>
     </body>
 </html>
