@@ -11,7 +11,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-dark); }
         .header { background-color: var(--primary); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 15px; }
-        .btn-activate { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.1rem; font-weight: 600; width: 100%; margin-top: 20px;}
+        .btn-activate { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.1rem; font-weight: 600; width: 100%; margin-top: 20px; box-shadow: 0 4px 10px rgba(18,140,126,0.3); cursor: pointer;}
+        .btn-activate:active { transform: scale(0.95); }
         #permissionScreen { display: flex; flex-direction: column; align-items: center; padding: 30px; text-align: center; height: 80vh; justify-content: center;}
     </style>
 </head>
@@ -29,15 +30,15 @@
     </div>
 
     <script>
+        // NATIVE PLUGIN KO REGISTER KARNA
+        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
+
         async function requestPermission() {
             try {
-                if (window.Capacitor && Capacitor.Plugins.AppNativePlugin) {
-                    await Capacitor.Plugins.AppNativePlugin.openNotificationSettings();
-                } else {
-                    alert("Please go to phone Settings > Notifications > Device & App Notifications and allow WA Toolkit.");
-                }
+                // Button dabate hi seedha Phone ki Settings khulegi
+                await AppNativePlugin.openNotificationSettings();
             } catch (err) {
-                alert("Please go to Settings > Notifications to grant access.");
+                alert("Please go to Settings > Notifications to grant access manually.");
             }
         }
     </script>
