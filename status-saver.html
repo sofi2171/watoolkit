@@ -19,7 +19,7 @@
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 45px; text-shadow: 0 2px 5px rgba(0,0,0,0.6); pointer-events: none;}
         #permission-box { text-align: center; padding: 40px 20px; display: none; }
         .btn { background: #128c7e; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-size: 16px; margin-top: 15px; font-weight: bold; cursor: pointer; }
-        #error-log { color: red; margin: 15px; padding: 10px; border: 1px solid red; border-radius: 5px; background: #ffe6e6; display: none; font-size: 14px;}
+        #loading-text { text-align:center; width:100%; color:#555; display:none; padding-top: 20px; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -34,10 +34,11 @@
 
     <div id="permission-box">
         <h2>Permission Required ⚠️</h2>
-        <p>App needs Storage access to view statuses.</p>
-        <button class="btn" onclick="askPermission()">Allow Permission</button>
-        <div id="error-log"></div>
+        <p>Please grant Storage permission to scan statuses.</p>
+        <button class="btn" onclick="askPermission()">Scan Statuses</button>
     </div>
+    
+    <div id="loading-text">Scanning all WhatsApp folders... ⏳</div>
 
     <div class="container" id="media-container"></div>
 
@@ -51,67 +52,67 @@
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
                 await fs.requestPermissions(); 
-                setTimeout(checkAndLoad, 1000);
+                checkAndLoad();
             } catch(e) {
-                showError("Popup failed: " + e.message);
+                alert('Storage Permission is required!');
             }
-        }
-
-        function showError(msg) {
-            const errLog = document.getElementById('error-log');
-            errLog.style.display = 'block';
-            errLog.innerHTML = `<b>Error:</b> ${msg}<br><br><span style="color:#333; font-size:12px;">Android 11+ Users: Please go to your phone <b>Settings > Apps > WA Toolkit > Permissions</b> and Allow <b>"All Files Access"</b> or "Storage" manually.</span>`;
         }
 
         async function checkAndLoad() {
             const container = document.getElementById('media-container');
             const permBox = document.getElementById('permission-box');
-            const errLog = document.getElementById('error-log');
+            const loadingText = document.getElementById('loading-text');
             
-            errLog.style.display = 'none'; 
-            container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">Scanning WhatsApp...</h3>';
+            permBox.style.display = 'none';
+            loadingText.style.display = 'block';
+            container.innerHTML = '';
 
-            try {
-                const fs = window.Capacitor.Plugins.Filesystem;
-                let result;
+            const fs = window.Capacitor.Plugins.Filesystem;
+            
+            // Yahan humne saare possible paths daal diye hain (Old & New)
+            const pathsToTry = [
+                'WhatsApp/Media/.Statuses', // Old Android / Legacy
+                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses', // New Android 11+
+                'WhatsApp Business/Media/.Statuses', // Old WA Business
+                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses' // New WA Business
+            ];
 
-                // 1. Try Normal WhatsApp Path
+            let uniqueMap = new Map();
+            let foundAnyFolder = false;
+
+            for (let path of pathsToTry) {
                 try {
-                    result = await fs.readdir({
-                        path: 'Android/media/com.whatsapp/WhatsApp/Media/.Statuses',
+                    const result = await fs.readdir({
+                        path: path,
                         directory: 'EXTERNAL_STORAGE'
                     });
-                } catch(err1) {
-                    // 2. Try WA Business Path
-                    try {
-                        result = await fs.readdir({
-                            path: 'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses',
-                            directory: 'EXTERNAL_STORAGE'
+                    
+                    if (result && result.files) {
+                        foundAnyFolder = true;
+                        result.files.forEach(f => {
+                            let fileName = f.name || f; // Handle different Capacitor versions
+                            let fileUri = f.uri || "";
+                            if(fileName.endsWith('.jpg') || fileName.endsWith('.mp4')) {
+                                uniqueMap.set(fileName, { name: fileName, uri: fileUri, path: path });
+                            }
                         });
-                    } catch(err2) {
-                        throw new Error("Folder not found or Access Blocked by Android.");
                     }
+                } catch(e) {
+                    // Agar ek path na mile toh error mat do, agla path try karo (Silent Catch)
                 }
+            }
 
-                permBox.style.display = 'none';
-                
-                let uniqueMap = new Map();
-                result.files.forEach(f => {
-                    if(f.name.endsWith('.jpg') || f.name.endsWith('.mp4')) {
-                        uniqueMap.set(f.name, f);
-                    }
-                });
-                allStatuses = Array.from(uniqueMap.values());
-                
-                if(allStatuses.length === 0) {
-                    container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">No statuses found! Open WhatsApp first.</h3>';
-                } else {
-                    renderMedia();
-                }
-            } catch(e) {
-                container.innerHTML = '';
+            loadingText.style.display = 'none';
+            allStatuses = Array.from(uniqueMap.values());
+
+            if (!foundAnyFolder) {
+                // Agar koi bhi folder nahi mila, tab permission box dobara dikhao
                 permBox.style.display = 'block';
-                showError(e.message);
+                document.querySelector('#permission-box p').innerHTML = "<b style='color:red;'>Path Not Found!</b><br><br>Make sure you have WhatsApp installed and have viewed some statuses.<br>Also check if Storage permission is allowed in settings.";
+            } else if(allStatuses.length === 0) {
+                container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">No recent statuses found! Open WhatsApp and view some first.</h3>';
+            } else {
+                renderMedia();
             }
         }
 
@@ -129,7 +130,9 @@
             const filtered = allStatuses.filter(f => currentTab === 'images' ? f.name.endsWith('.jpg') : f.name.endsWith('.mp4'));
 
             filtered.forEach(file => {
-                const src = window.Capacitor.convertFileSrc(file.uri);
+                // Generate absolute URI if Capacitor didn't provide one
+                let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
+                
                 const card = document.createElement('div');
                 card.className = 'card';
                 
@@ -148,21 +151,33 @@
                 const btn = document.createElement('button');
                 btn.className = 'download-btn';
                 btn.innerHTML = '⬇';
-                btn.onclick = (e) => { e.stopPropagation(); downloadMedia(file.uri, file.name); };
+                // Use original path for downloading
+                const downloadUri = file.uri ? file.uri : file.path + '/' + file.name;
+                btn.onclick = (e) => { e.stopPropagation(); downloadMedia(downloadUri, file.name); };
                 card.appendChild(btn);
 
                 container.appendChild(card);
             });
         }
 
-        async function downloadMedia(uri, name) {
+        async function downloadMedia(uriOrPath, name) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
-                await fs.copy({
-                    from: uri,
+                
+                let copyOptions = {
                     to: 'Download/' + name,
                     toDirectory: 'EXTERNAL_STORAGE'
-                });
+                };
+
+                // Handle both full URIs and relative paths for copying
+                if (uriOrPath.startsWith('file://')) {
+                    copyOptions.from = uriOrPath;
+                } else {
+                    copyOptions.path = uriOrPath;
+                    copyOptions.directory = 'EXTERNAL_STORAGE';
+                }
+
+                await fs.copy(copyOptions);
                 alert('✅ Saved successfully in Downloads folder!');
             } catch(e) {
                 alert('⚠️ Download Failed: ' + e.message);
