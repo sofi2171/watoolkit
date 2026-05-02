@@ -73,7 +73,7 @@ public class MainActivity extends BridgeActivity {
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getContext().startActivity(i);
                 call.resolve();
-            } catch (Exception e) { call.reject("Error"); }
+            } catch (Exception e) { call.reject("Error opening settings"); }
         }
     }
 }
