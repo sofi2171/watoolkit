@@ -3,7 +3,7 @@ name: Build Android APK (Latest Tech)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Is line se aap GitHub par manual button daba kar bhi build chala sakte hain
+  workflow_dispatch:
 
 jobs:
   build:
@@ -48,4 +48,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wa-toolkit-premium-apk
-          path: android/app/build/outputs/apk/**/*.apk
+          # Ye magic line poore project mein APK dhoond legi:
+          path: '**/*.apk'
