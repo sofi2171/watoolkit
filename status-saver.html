@@ -3,249 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Status Saver - Final Version</title>
+    <title>Status Saver - WA Toolkit</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --primary: #128C7E;
-            --primary-dark: #075E54;
-            --bg-color: #f0f2f5;
-            --white: #ffffff;
-            --text-dark: #111b21;
-        }
-
-        /* Basic Reset & Screen Lock */
+        :root { --primary: #128C7E; --primary-dark: #075E54; --bg-color: #f0f2f5; --white: #ffffff; --text-dark: #111b21; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; width: 100%; background-color: var(--bg-color); color: var(--text-dark); overflow: hidden; }
-        
         .app-container { display: flex; flex-direction: column; height: 100dvh; }
-
-        /* Header */
         .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
-        .header i { font-size: 20px; cursor: pointer; }
         .header h1 { font-size: 1.2rem; font-weight: 600; }
-
-        /* Tabs */
         .tabs { display: flex; background: var(--white); flex-shrink: 0; z-index: 9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; padding: 14px 0; text-align: center; font-weight: 600; color: #667781; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; transition: 0.2s; }
+        .tab-btn { flex: 1; padding: 14px 0; text-align: center; font-weight: 600; color: #667781; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; }
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-
-        /* Content Area */
         .content-area { flex-grow: 1; overflow-y: auto; padding: 10px; position: relative; }
-
-        /* Loader */
         .loader-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 90; }
         .spinner { width: 45px; height: 45px; border: 4px solid #c1e6e1; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Empty State */
-        .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #667781; width: 100%; padding: 20px; display: none; }
-        .empty-state i { font-size: 50px; margin-bottom: 15px; color: var(--primary); opacity: 0.6; }
-
-        /* Grid */
         .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; display: none; }
-        .status-card { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 9/16; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+        .status-card { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 9/16; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .status-media { width: 100%; height: 100%; object-fit: cover; }
-        .video-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255, 255, 255, 0.9); font-size: 35px; pointer-events: none; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        
-        /* Download Button on Grid */
-        .download-btn { position: absolute; bottom: 10px; right: 10px; width: 38px; height: 38px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; z-index: 5; }
-        .download-btn:active { transform: scale(0.9); background: var(--primary-dark); }
-
-        /* In-App Viewer Modal (Fullscreen) */
-        .viewer-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.98); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .viewer-close { position: absolute; top: 20px; left: 20px; color: white; font-size: 28px; cursor: pointer; z-index: 1010; padding: 10px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        .viewer-content { max-width: 100%; max-height: 80vh; border-radius: 10px; object-fit: contain; }
-        .viewer-actions { position: absolute; bottom: 30px; display: flex; gap: 20px; }
-        .viewer-btn { background: var(--primary); color: white; padding: 12px 25px; border-radius: 50px; font-weight: 600; border: none; display: flex; align-items: center; gap: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-
-        /* Toast Notification */
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); background: #323232; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); white-space: nowrap; }
-        .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+        .download-btn { position: absolute; bottom: 10px; right: 10px; width: 38px; height: 38px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; cursor: pointer; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #667781; display: none; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
-        
         <div class="header">
             <a href="index.html" style="color: white;"><i class="fa-solid fa-arrow-left"></i></a>
             <h1>Status Saver</h1>
         </div>
-
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('images')">Images</button>
             <button class="tab-btn" onclick="switchTab('videos')">Videos</button>
         </div>
-
         <div class="content-area">
-            <div class="loader-container" id="loader">
-                <div class="spinner"></div>
-                <p style="margin-top: 15px; color: var(--primary); font-weight: 500;">Loading Local Statuses...</p>
-            </div>
-
-            <div class="empty-state" id="emptyState">
-                <i class="fa-regular fa-folder-open"></i>
-                <p>No statuses found. Please watch statuses in WhatsApp first.</p>
-            </div>
-
+            <div class="loader-container" id="loader"><div class="spinner"></div><p style="margin-top:15px;">Loading Statuses...</p></div>
+            <div class="empty-state" id="emptyState"><i class="fa-regular fa-folder-open" style="font-size:40px;"></i><p id="errorText">No statuses found.</p></div>
             <div class="grid-container" id="statusGrid"></div>
         </div>
     </div>
 
-    <div class="viewer-modal" id="viewerModal">
-        <i class="fa-solid fa-arrow-left viewer-close" onclick="closeViewer()"></i>
-        
-        <div id="mediaContainer">
-            </div>
-        
-        <div class="viewer-actions">
-            <button class="viewer-btn" id="modalDownloadBtn">
-                <i class="fa-solid fa-download"></i> Save to Gallery
-            </button>
-        </div>
-    </div>
+    <script src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
+    <script>
+        let realImages = []; let realVideos = [];
 
-    <div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i> Saved to Gallery</div>
-
-<script>
-    let realImages = [];
-    let realVideos = [];
-    let currentTab = 'images';
-
-    // 1. Android/Java Bridge se data receive karne ka function
-    function receiveStatusesFromAndroid(imageJson, videoJson) {
-        try {
-            realImages = JSON.parse(imageJson);
-            realVideos = JSON.parse(videoJson);
-            
-            document.getElementById('loader').style.display = 'none';
-            
-            if(realImages.length === 0 && realVideos.length === 0) {
-                document.getElementById('emptyState').style.display = 'block';
-            } else {
-                document.getElementById('statusGrid').style.display = 'grid';
-                renderStatuses(realImages, 'images');
-            }
-        } catch (e) {
-            console.error("Data parsing error:", e);
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-        }
-    }
-
-    // 2. Tab Switching
-    function switchTab(type) {
-        currentTab = type;
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        renderStatuses(type === 'images' ? realImages : realVideos, type);
-    }
-
-    // 3. Render Logic with Path Conversion (IMPORTANT)
-    function renderStatuses(mediaArray, type) {
-        const grid = document.getElementById('statusGrid');
-        grid.innerHTML = ''; 
-
-        if(!mediaArray || mediaArray.length === 0) {
-            grid.style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-            return;
-        }
-
-        document.getElementById('emptyState').style.display = 'none';
-        grid.style.display = 'grid';
-
-        mediaArray.forEach(mediaPath => {
-            // Capacitor ke liye path convert karna zaroori hai
-            const webPath = window.Capacitor ? Capacitor.convertFileSrc(mediaPath) : mediaPath;
-            
-            const card = document.createElement('div');
-            card.className = 'status-card';
-            card.onclick = () => openViewer(webPath, type, mediaPath);
-            
-            let mediaHTML = type === 'images' 
-                ? `<img src="${webPath}" class="status-media">`
-                : `<video src="${webPath}" class="status-media"></video><i class="fa-solid fa-circle-play video-indicator"></i>`;
-
-            card.innerHTML = `
-                ${mediaHTML}
-                <div class="download-btn" onclick="downloadFile('${mediaPath}', event)">
-                    <i class="fa-solid fa-arrow-down"></i>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // 4. Viewer Modal
-    function openViewer(webPath, type, originalPath) {
-        const modal = document.getElementById('viewerModal');
-        const container = document.getElementById('mediaContainer');
-        const downloadBtn = document.getElementById('modalDownloadBtn');
-        container.innerHTML = '';
-
-        if(type === 'images') {
-            container.innerHTML = `<img src="${webPath}" class="viewer-content">`;
-        } else {
-            container.innerHTML = `<video src="${webPath}" class="viewer-content" controls autoplay></video>`;
-        }
-
-        downloadBtn.onclick = () => downloadFile(originalPath, null);
-        modal.style.display = 'flex';
-    }
-
-    function closeViewer() {
-        document.getElementById('viewerModal').style.display = 'none';
-        document.getElementById('mediaContainer').innerHTML = '';
-    }
-
-    // 5. Download & Bridge Call
-    async function downloadFile(filePath, event) {
-        if(event) event.stopPropagation();
-        
-        const toast = document.getElementById('toast');
-        toast.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        toast.classList.add('show');
-
-        // Aapne jo Java mein saveToGallery function banaya hai (agar banaya hai)
-        if (window.Capacitor && Capacitor.Plugins.StatusFetch) {
+        async function loadStatuses() {
             try {
-                // Agar aapne Java mein save method banaya hai to yahan call karein
-                // Warna toast show kar dein
-                setTimeout(() => {
-                    toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> Saved to Gallery';
-                    setTimeout(() => toast.classList.remove('show'), 2000);
-                }, 1000);
-            } catch (err) { console.error(err); }
-        }
-    }
-
-    // 6. AUTO LOAD ON START
-    window.onload = async () => {
-        try {
-            if (window.Capacitor && Capacitor.Plugins.StatusFetch) {
-                const { StatusFetch } = Capacitor.Plugins;
-                const result = await StatusFetch.getWhatsAppStatuses();
-                
-                const imgs = result.statuses.filter(path => path.toLowerCase().endsWith('.jpg') || path.toLowerCase().endsWith('.jpeg'));
-                const vids = result.statuses.filter(path => path.toLowerCase().endsWith('.mp4'));
-                
-                receiveStatusesFromAndroid(JSON.stringify(imgs), JSON.stringify(vids));
-            } else {
-                console.warn("Capacitor StatusFetch Plugin not found.");
-                setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 2000);
+                if (window.Capacitor && Capacitor.Plugins.StatusBridge) {
+                    const { StatusBridge } = Capacitor.Plugins;
+                    const result = await StatusBridge.getStatuses();
+                    
+                    realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
+                    realVideos = result.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));
+                    
+                    document.getElementById('loader').style.display = 'none';
+                    renderStatuses(realImages, 'images');
+                }
+            } catch (err) {
+                document.getElementById('loader').style.display = 'none';
+                if (err.message === "needs_permission") {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('errorText').innerHTML = "Permission Required! Please grant 'All Files Access' and restart the app.";
+                }
             }
-        } catch (err) {
-            console.error("Native Bridge Error:", err);
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
         }
-    };
-</script>
 
+        function renderStatuses(mediaArray, type) {
+            const grid = document.getElementById('statusGrid');
+            grid.innerHTML = '';
+            if (mediaArray.length === 0) {
+                grid.style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            document.getElementById('emptyState').style.display = 'none';
+            grid.style.display = 'grid';
+            mediaArray.forEach(path => {
+                const webPath = Capacitor.convertFileSrc(path);
+                const card = document.createElement('div');
+                card.className = 'status-card';
+                card.innerHTML = type === 'images' ? `<img src="${webPath}" class="status-media">` : `<video src="${webPath}" class="status-media"></video>`;
+                grid.appendChild(card);
+            });
+        }
 
+        function switchTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderStatuses(type === 'images' ? realImages : realVideos, type);
+        }
+
+        window.onload = loadStatuses;
+    </script>
 </body>
 </html>
