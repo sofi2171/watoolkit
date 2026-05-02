@@ -11,10 +11,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
@@ -41,12 +41,13 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug
 
-      - name: Find and Upload APK
+      # Ye step file dhoondega aur uska path save karega
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: wa-toolkit-premium-apk
-          # Ye line ab poore folder mein APK dhoondegi
-          path: android/**/*.apk
-          if-no-files-found: error
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/bundle/debug/*.aab
