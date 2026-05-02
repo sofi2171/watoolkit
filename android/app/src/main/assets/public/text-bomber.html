@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Text Bomber - WA Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #128C7E;
+            --primary-dark: #075E54;
+            --danger: #ef4444;
+            --bg-color: #f0f2f5;
+            --white: #ffffff;
+            --text-dark: #111b21;
+            --text-muted: #667781;
+            --border: #e2e8f0;
+        }
+
+        /* Basic Reset & Perfect Screen Lock */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100vw; background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overflow-y: hidden; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; overflow-x: hidden; }
+
+        /* Header */
+        .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; width: 100%; }
+        .header i { font-size: 20px; cursor: pointer; }
+        .header h1 { font-size: 1.2rem; font-weight: 600; }
+
+        /* Content Area */
+        .content-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 20px 15px; width: 100%; }
+
+        /* Info Section */
+        .info-section { text-align: center; margin-bottom: 20px; width: 100%; }
+        .info-icon { width: 60px; height: 60px; background: #fef2f2; color: var(--danger); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 25px; margin-bottom: 10px; }
+        .info-section h2 { font-size: 1.1rem; color: var(--text-dark); }
+        .info-section p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Form Card */
+        .form-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 20px; width: 100%; }
+        
+        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; }
+        
+        .text-input, .num-input { width: 100%; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); }
+        .text-input { height: 60px; resize: none; background: var(--white); }
+        .text-input:focus, .num-input:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+
+        /* Flex Row for Number and Checkbox */
+        .row-group { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .row-group .num-box { flex: 1; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-dark); margin-top: 20px; }
+        .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--danger); }
+
+        /* Preview Box */
+        .preview-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 12px; border-radius: 12px; height: 120px; overflow-y: auto; word-break: break-all; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 20px; }
+        .preview-placeholder { color: #94a3b8; font-size: 0.85rem; display: flex; height: 100%; align-items: center; justify-content: center; }
+
+        /* Target Number inputs */
+        .phone-input-wrapper { display: flex; gap: 8px; width: 100%; }
+        .country-code { width: 85px; flex-shrink: 0; padding: 12px 5px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); text-align: center; }
+        .phone-number { flex: 1; min-width: 0; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; color: var(--text-dark); outline: none; transition: 0.3s; }
+        .phone-number:focus, .country-code:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.1); }
+
+        /* Action Buttons */
+        .btn-group { display: flex; gap: 10px; width: 100%; margin-top: 20px; }
+        
+        .btn-generate { width: 100%; background: #1e293b; color: var(--white); border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .btn-generate:active { transform: scale(0.96); }
+
+        .btn-send { flex: 2; background: var(--primary); color: var(--white); border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(18, 140, 126, 0.3); }
+        .btn-send:active { transform: scale(0.96); background: var(--primary-dark); }
+        
+        .btn-copy { flex: 1; background: var(--white); color: var(--text-dark); border: 1.5px solid var(--border); padding: 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-copy:active { transform: scale(0.96); background: #e2e8f0; }
+
+        .error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 5px; display: none; }
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); background: #323232; color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); white-space: nowrap; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="header">
+            <a href="index.html" style="color: white;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Text Bomber</h1>
+        </div>
+
+        <div class="content-area">
+            
+            <div class="info-section">
+                <div class="info-icon"><i class="fa-solid fa-bomb"></i></div>
+                <h2>Message Repeater</h2>
+                <p>Repeat any text up to 10,000 times instantly!</p>
+            </div>
+
+            <div class="form-card">
+                
+                <div class="input-group">
+                    <label>Text to Repeat</label>
+                    <textarea id="msgToRepeat" class="text-input" placeholder="E.g. Sorry, I love you, Hi..."></textarea>
+                    <div id="errorMsgText" class="error-msg">Please enter some text.</div>
+                </div>
+
+                <div class="row-group">
+                    <div class="num-box">
+                        <label>Repeat Count (Max 10K)</label>
+                        <input type="number" id="repeatCount" class="num-input" value="100" min="1" max="10000">
+                    </div>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="newLineCheck" checked>
+                        Add New Line
+                    </label>
+                </div>
+
+                <button class="btn-generate" onclick="generateBomberText()">
+                    <i class="fa-solid fa-rotate-right"></i> Generate Text
+                </button>
+
+                <div class="input-group">
+                    <label>Generated Preview</label>
+                    <div class="preview-box" id="previewBox">
+                        <span class="preview-placeholder">Preview will appear here...</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-card">
+                <div class="input-group">
+                    <label>Target WhatsApp Number</label>
+                    <div class="phone-input-wrapper">
+                        <select id="countryCode" class="country-code">
+                            <option value="+92">+92 (PK)</option>
+                            <option value="+91">+91 (IN)</option>
+                            <option value="+880">+880 (BD)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+44">+44 (UK)</option>
+                        </select>
+                        <input type="tel" id="phoneNumber" class="phone-number" placeholder="300 1234567" autocomplete="off">
+                    </div>
+                    <div id="errorPhoneText" class="error-msg">Enter a valid number and generate text first.</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-copy" onclick="copyText()">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                    <button class="btn-send" onclick="sendToWhatsApp()">
+                        <i class="fa-solid fa-bomb"></i> Send Bomb
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i> Text copied to clipboard!</div>
+
+    <script>
+        const msgInput = document.getElementById('msgToRepeat');
+        const countInput = document.getElementById('repeatCount');
+        const newLineCheck = document.getElementById('newLineCheck');
+        const previewBox = document.getElementById('previewBox');
+        const errorMsgText = document.getElementById('errorMsgText');
+        
+        const ccSelect = document.getElementById('countryCode');
+        const phoneInput = document.getElementById('phoneNumber');
+        const errorPhoneText = document.getElementById('errorPhoneText');
+
+        let generatedTextData = "";
+
+        // 1. Generate Text Logic
+        function generateBomberText() {
+            let text = msgInput.value.trim();
+            let count = parseInt(countInput.value);
+
+            if (text === "") {
+                errorMsgText.style.display = 'block';
+                msgInput.style.borderColor = 'var(--danger)';
+                return;
+            }
+            
+            errorMsgText.style.display = 'none';
+            msgInput.style.borderColor = 'var(--border)';
+
+            // Limit to 10,000 to prevent crashing
+            if (isNaN(count) || count < 1) count = 1;
+            if (count > 10000) {
+                count = 10000;
+                countInput.value = 10000;
+            }
+
+            let separator = newLineCheck.checked ? '\n' : ' ';
+            
+            // Fast way to repeat string
+            let result = Array(count).fill(text).join(separator);
+            generatedTextData = result;
+
+            // Show preview
+            previewBox.innerText = result;
+        }
+
+        // 2. Send to WhatsApp
+        function sendToWhatsApp() {
+            let phone = phoneInput.value.replace(/\D/g, ''); 
+            
+            if (generatedTextData === "" || phone.length < 7) {
+                errorPhoneText.style.display = 'block';
+                return;
+            }
+            errorPhoneText.style.display = 'none';
+
+            let fullNumber = ccSelect.value.replace('+', '') + phone;
+            let waUrl = `whatsapp://send?phone=${fullNumber}&text=${encodeURIComponent(generatedTextData)}`;
+            
+            // Native Bridge Fallback
+            if (window.AndroidApp && window.AndroidApp.openDirectChat) {
+                window.AndroidApp.openDirectChat(fullNumber, generatedTextData);
+            } else {
+                window.location.href = waUrl;
+                setTimeout(() => {
+                    window.location.href = `https://wa.me/${fullNumber}?text=${encodeURIComponent(generatedTextData)}`;
+                }, 500);
+            }
+        }
+
+        // 3. Copy Text
+        function copyText() {
+            if (generatedTextData === "") {
+                alert("Please generate text first!");
+                return;
+            }
+            
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = generatedTextData;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Auto formatting phone input
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, ''); 
+            if(this.value.length > 0) errorPhoneText.style.display = 'none';
+        });
+
+        msgInput.addEventListener('input', function () {
+            if(this.value.trim().length > 0) {
+                errorMsgText.style.display = 'none';
+                this.style.borderColor = 'var(--border)';
+            }
+        });
+
+    </script>
+
+
+    <script>
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                // Jab user settings se wapas aaye toh half second baad page reload karo
+                setTimeout(() => {
+                    location.reload(); 
+                }, 500);
+            }
+        });
+    </script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                    window.Capacitor.Plugins.App.addListener("appStateChange", ({ isActive }) => {
+                        if (isActive) {
+                            setTimeout(() => { location.reload(); }, 500);
+                        }
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+    </body>
+</html>
