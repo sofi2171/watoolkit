@@ -8,40 +8,24 @@
     <style>
         body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
         header { background: #075e54; color: white; padding: 12px 15px; display: flex; align-items: center; font-size: 19px; position: sticky; top: 0; z-index: 100;}
-        .back-btn { cursor: pointer; margin-right: 15px; font-size: 20px; }
+        .back-btn { cursor: pointer; margin-right: 15px; font-size: 20px; padding: 5px;}
         .tabs { display: flex; background: #128c7e; position: sticky; top: 48px; z-index: 99; }
         .tab { flex: 1; text-align: center; padding: 12px; color: white; opacity: 0.7; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;}
         .tab.active { opacity: 1; border-bottom: 3px solid white; }
         
-        /* 🚀 GRID FIX: Ab statuses screen mein fit ayenge */
-        .container { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 10px; 
-            padding: 10px; 
-            box-sizing: border-box;
-        }
-        @media (min-width: 600px) { .container { grid-template-columns: repeat(3, 1fr); } }
-
-        .card { 
-            background: #000; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            position: relative; 
-            height: 200px; /* Thoda bara size professional lagta hai */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        /* 🚀 GRID FIX: Mobile screen mein fit ayenge */
+        .container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 8px; box-sizing: border-box; }
+        
+        .card { background: #000; border-radius: 8px; overflow: hidden; position: relative; height: 180px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .media-box { width: 100%; height: 100%; cursor: pointer; }
         .card img, .card video { width: 100%; height: 100%; object-fit: cover; }
         
-        .download-btn-out { 
-            position: absolute; bottom: 8px; right: 8px; 
-            background: #25d366; color: white; border: none; 
-            border-radius: 50%; width: 36px; height: 36px; 
-            display: flex; justify-content: center; align-items: center; 
-            z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
+        .download-btn-out { position: absolute; bottom: 8px; right: 8px; background: #25d366; color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 16px;}
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 40px; opacity: 0.8; pointer-events: none;}
+
+        #permission-box { text-align: center; padding: 40px 20px; display: none; }
+        .btn { background: #128c7e; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-size: 16px; margin-top: 15px; font-weight: bold; cursor: pointer; }
+        #loading-text { text-align:center; width:100%; color:#555; display:none; padding-top: 20px; font-weight: bold;}
 
         #viewer { position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999; display:none; flex-direction:column; justify-content:center; }
         #viewer.active { display:flex; }
@@ -60,14 +44,20 @@
         <div class="tab" onclick="switchTab('videos')">Videos</div>
     </div>
 
+    <div id="permission-box">
+        <h2>Permission Required ⚠️</h2>
+        <button class="btn" onclick="askPermission()">Scan Statuses</button>
+    </div>
+    
+    <div id="loading-text">Scanning folders... ⏳</div>
     <div class="container" id="media-container"></div>
 
     <div id="viewer">
         <div class="viewer-top">
-            <i class="fas fa-times" style="font-size:24px;" onclick="closeViewer()"></i>
+            <i class="fas fa-times" style="font-size:24px; cursor:pointer; padding:5px;" onclick="closeViewer()"></i>
             <div>
-                <i class="fas fa-share-alt" style="margin-right:20px; font-size:20px;" id="v-share"></i>
-                <i class="fas fa-download" style="font-size:20px;" id="v-down"></i>
+                <i class="fas fa-share-alt" style="margin-right:20px; font-size:20px; cursor:pointer;" onclick="alert('Share feature requires app update.')"></i>
+                <i class="fas fa-download" style="font-size:20px; cursor:pointer;" id="v-down"></i>
             </div>
         </div>
         <div id="viewer-content"></div>
@@ -77,81 +67,130 @@
         let allStatuses = [];
         let currentTab = 'images';
 
-        window.onload = () => { setTimeout(loadFiles, 500); };
+        window.addEventListener('load', () => { setTimeout(checkAndLoad, 500); });
 
-        async function loadFiles() {
-            const fs = window.Capacitor.Plugins.Filesystem;
-            const paths = [
-                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses',
-                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses'
-            ];
-            
-            let uniqueFiles = new Map();
-            for (let p of paths) {
-                try {
-                    let res = await fs.readdir({ path: p, directory: 'EXTERNAL_STORAGE' });
-                    res.files.forEach(f => {
-                        if(f.name.endsWith('.jpg') || f.name.endsWith('.mp4')) {
-                            uniqueFiles.set(f.name, { name: f.name, uri: f.uri });
-                        }
-                    });
-                } catch(e) {}
-            }
-            allStatuses = Array.from(uniqueFiles.values());
-            render();
+        async function askPermission() {
+            try {
+                const fs = window.Capacitor.Plugins.Filesystem;
+                await fs.requestPermissions(); 
+                checkAndLoad();
+            } catch(e) { alert('Permission required!'); }
         }
 
-        function render() {
+        async function checkAndLoad() {
+            const container = document.getElementById('media-container');
+            const permBox = document.getElementById('permission-box');
+            const loadingText = document.getElementById('loading-text');
+            
+            permBox.style.display = 'none';
+            loadingText.style.display = 'block';
+            container.innerHTML = '';
+
+            const fs = window.Capacitor.Plugins.Filesystem;
+            
+            // 🚀 PERFECTION FIX: Yeh wahi purana loop hai jo aapke mobile mein work kar raha tha
+            const pathsToTry = [
+                'WhatsApp/Media/.Statuses', 
+                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses', 
+                'WhatsApp Business/Media/.Statuses', 
+                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses' 
+            ];
+
+            let uniqueMap = new Map();
+            let foundAnyFolder = false;
+
+            for (let path of pathsToTry) {
+                try {
+                    const result = await fs.readdir({ path: path, directory: 'EXTERNAL_STORAGE' });
+                    if (result && result.files) {
+                        foundAnyFolder = true;
+                        result.files.forEach(f => {
+                            let fileName = f.name || f; 
+                            let fileUri = f.uri || "";
+                            if(fileName.endsWith('.jpg') || fileName.endsWith('.mp4')) {
+                                uniqueMap.set(fileName, { name: fileName, uri: fileUri, path: path });
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+
+            loadingText.style.display = 'none';
+            allStatuses = Array.from(uniqueMap.values());
+
+            if (!foundAnyFolder) {
+                permBox.style.display = 'block';
+            } else {
+                renderMedia();
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMedia();
+        }
+
+        function renderMedia() {
             const container = document.getElementById('media-container');
             container.innerHTML = '';
-            const filtered = allStatuses.filter(f => currentTab === 'images' ? f.name.endsWith('.jpg') : f.name.endsWith('.mp4'));
             
+            const filtered = allStatuses.filter(f => currentTab === 'images' ? f.name.endsWith('.jpg') : f.name.endsWith('.mp4'));
+
             filtered.forEach(file => {
-                const src = window.Capacitor.convertFileSrc(file.uri);
+                let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
+                
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `
-                    <div class="media-box" onclick="openViewer('${file.uri}', '${currentTab}')">
-                        ${currentTab === 'images' ? `<img src="${src}">` : `<video src="${src}#t=0.5"></video><i class="fas fa-play play-icon"></i>`}
-                    </div>
-                    <button class="download-btn-out" onclick="saveFile('${file.uri}', '${file.name}')">
-                        <i class="fas fa-arrow-down"></i>
-                    </button>
-                `;
+                
+                const mediaBox = document.createElement('div');
+                mediaBox.className = 'media-box';
+                mediaBox.innerHTML = currentTab === 'images' ? `<img src="${src}">` : `<video src="${src}#t=0.1" preload="metadata"></video><i class="fas fa-play play-icon"></i>`;
+                mediaBox.onclick = () => openViewer(src, currentTab === 'images' ? 'image' : 'video', file);
+                
+                card.appendChild(mediaBox);
+
+                const btn = document.createElement('button');
+                btn.className = 'download-btn-out';
+                btn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                btn.onclick = (e) => { e.stopPropagation(); downloadMedia(file); };
+                card.appendChild(btn);
+
                 container.appendChild(card);
             });
         }
 
-        function switchTab(t) {
-            currentTab = t;
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
-            render();
-        }
-
-        async function saveFile(uri, name) {
+        async function downloadMedia(file) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
-                // 🚀 GALLERY FIX: Save in a proper folder
-                await fs.copy({
-                    from: uri,
-                    to: 'Download/' + name,
-                    toDirectory: 'EXTERNAL_STORAGE'
-                });
-                alert("✅ Saved to Gallery (Downloads)!");
-            } catch(e) { alert("Error: " + e.message); }
+                let uriOrPath = file.uri ? file.uri : file.path + '/' + file.name;
+                let copyOptions = { to: 'Download/' + file.name, toDirectory: 'EXTERNAL_STORAGE' };
+                
+                if (file.uri && file.uri.startsWith('file://')) { copyOptions.from = file.uri; }
+                else { copyOptions.path = uriOrPath; copyOptions.directory = 'EXTERNAL_STORAGE'; }
+                
+                await fs.copy(copyOptions);
+                alert('✅ Saved successfully in Gallery/Downloads!');
+            } catch(e) {
+                alert('⚠️ Download Failed: ' + e.message);
+            }
         }
 
-        function openViewer(uri, type) {
+        function openViewer(src, type, file) {
             const v = document.getElementById('viewer');
             const c = document.getElementById('viewer-content');
-            const src = window.Capacitor.convertFileSrc(uri);
-            c.innerHTML = type === 'images' ? `<img src="${src}">` : `<video src="${src}" controls autoplay></video>`;
-            document.getElementById('v-down').onclick = () => saveFile(uri, uri.split('/').pop());
+            c.innerHTML = type === 'image' ? `<img src="${src}">` : `<video src="${src}" controls autoplay></video>`;
+            document.getElementById('v-down').onclick = () => downloadMedia(file);
             v.classList.add('active');
         }
 
-        function closeViewer() { document.getElementById('viewer').classList.remove('active'); }
+        function closeViewer() {
+            const v = document.getElementById('viewer');
+            const video = document.querySelector('#viewer-content video');
+            if(video) video.pause();
+            v.classList.remove('active');
+        }
     </script>
 </body>
 </html>
