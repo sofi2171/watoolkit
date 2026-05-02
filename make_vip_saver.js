@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const htmlCode = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -112,9 +114,9 @@
                 mediaBox.className = 'media-box';
                 
                 if(currentTab === 'images') {
-                    mediaBox.innerHTML = `<img src="${src}">`;
+                    mediaBox.innerHTML = \`<img src="\${src}">\`;
                 } else {
-                    mediaBox.innerHTML = `<video src="${src}" preload="auto" playsinline muted></video><div class="play-icon">▶</div>`;
+                    mediaBox.innerHTML = \`<video src="\${src}" preload="auto" playsinline muted></video><div class="play-icon">▶</div>\`;
                 }
                 
                 mediaBox.onclick = () => viewMedia(src, currentTab === 'images' ? 'image' : 'video');
@@ -155,12 +157,15 @@
             viewer.appendChild(closeBtn);
 
             if(type === 'image') {
-                viewer.innerHTML += `<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+                viewer.innerHTML += \`<img src="\${src}" style="max-width:100%; max-height:100%; object-fit:contain;">\`;
             } else {
-                viewer.innerHTML += `<video src="${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain; outline:none;"></video>`;
+                viewer.innerHTML += \`<video src="\${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain; outline:none;"></video>\`;
             }
             document.body.appendChild(viewer);
         }
     </script>
 </body>
-</html>
+</html>`;
+
+fs.writeFileSync('./www/status-saver.html', htmlCode);
+console.log('✅ VIP Status Saver with Back Button injected into WA Toolkit!');
