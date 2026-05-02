@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">WA Toolkit</string>
-    <string name="title_activity_main">WA Toolkit</string>
-    <string name="package_name">com.sufian.watoolkit</string>
-    <string name="custom_url_scheme">com.sufian.watoolkit</string>
-</resources>
