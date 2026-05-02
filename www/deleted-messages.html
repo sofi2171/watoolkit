@@ -32,11 +32,14 @@
     <script>
         async function requestPermission() {
             try {
-                // یہ درست اور سب سے محفوظ طریقہ ہے
-                const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
-                await AppNativePlugin.openNotificationSettings();
+                // ڈائریکٹ نیٹو جاوا سے کنکشن
+                const nativeBridge = window.Capacitor?.Plugins?.AppNativePlugin;
+                if (!nativeBridge) {
+                    throw new Error("Native Connection Failed. Plugin not linked.");
+                }
+                await nativeBridge.openNotificationSettings();
             } catch (err) {
-                alert("Error Details: " + err.message);
+                alert("Native Error: " + err.message);
             }
         }
     </script>
