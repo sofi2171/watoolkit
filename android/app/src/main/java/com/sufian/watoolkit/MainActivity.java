@@ -18,12 +18,10 @@ import java.io.File;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // پلگ ان رجسٹر (super.onCreate سے پہلے)
-        registerPlugin(AppNativePlugin.class);
         super.onCreate(savedInstanceState);
+        registerPlugin(AppNativePlugin.class);
     }
 
-    // پلگ ان اب مین ایکٹیوٹی کے اندر ہی ہے، کوئی فائل مس نہیں ہوگی!
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
         @PluginMethod
@@ -41,12 +39,17 @@ public class MainActivity extends BridgeActivity {
                         return;
                     }
                 }
+                
+                // Android 11+ کے لیے مخصوص پاتھ (com.whatsapp)
+                String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
                 String[] paths = {
-                    Environment.getExternalStorageDirectory() + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
-                    Environment.getExternalStorageDirectory() + "/WhatsApp/Media/.Statuses",
-                    Environment.getExternalStorageDirectory() + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
-                    Environment.getExternalStorageDirectory() + "/WhatsApp Business/Media/.Statuses"
+                    baseDir + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
+                    baseDir + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
+                    baseDir + "/WhatsApp/Media/.Statuses",
+                    baseDir + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
+                    baseDir + "/WhatsApp Business/Media/.Statuses"
                 };
+
                 for (String p : paths) {
                     File dir = new File(p);
                     if (dir.exists() && dir.isDirectory()) {
@@ -62,9 +65,7 @@ public class MainActivity extends BridgeActivity {
                 }
                 ret.put("statuses", statusArray);
                 call.resolve(ret);
-            } catch (Exception e) {
-                call.reject(e.getMessage() != null ? e.getMessage() : "Native Error");
-            }
+            } catch (Exception e) { call.reject(e.getMessage()); }
         }
 
         @PluginMethod
@@ -74,9 +75,7 @@ public class MainActivity extends BridgeActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getContext().startActivity(intent);
                 call.resolve();
-            } catch (Exception e) {
-                call.reject("Native Error");
-            }
+            } catch (Exception e) { call.reject(e.getMessage()); }
         }
     }
 }

@@ -7,103 +7,97 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #128C7E; --bg-color: #f0f2f5; --white: #ffffff; --text-dark: #111b21; }
+        :root { --primary: #128C7E; --bg-color: #f0f2f5; --white: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        html, body { height: 100%; width: 100%; background-color: var(--bg-color); color: var(--text-dark); overflow: hidden; }
-        .app-container { display: flex; flex-direction: column; height: 100dvh; }
-        .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
-        .tabs { display: flex; background: var(--white); flex-shrink: 0; }
-        .tab-btn { flex: 1; padding: 14px 0; text-align: center; font-weight: 600; color: #667781; background: none; border: none; border-bottom: 3px solid transparent; }
+        html, body { height: 100%; overflow: hidden; background: var(--bg-color); }
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+        .header { background: var(--primary); color: white; padding: 16px; display: flex; align-items: center; gap: 15px; }
+        .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: 600; color: #666; border-bottom: 3px solid transparent; }
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        .content-area { flex-grow: 1; overflow-y: auto; padding: 10px; position: relative; }
-        .loader-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 90; }
-        .spinner { width: 45px; height: 45px; border: 4px solid #c1e6e1; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; display: none; }
-        .status-card { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 9/16; }
-        .status-media { width: 100%; height: 100%; object-fit: cover; }
-        .download-btn { position: absolute; bottom: 10px; right: 10px; width: 38px; height: 38px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; cursor: pointer; z-index: 10;}
-        .empty-state { text-align: center; padding: 50px 20px; color: #667781; display: none; }
+        
+        /* Pull to Refresh Area */
+        .content-area { flex: 1; overflow-y: auto; padding: 10px; -webkit-overflow-scrolling: touch; position: relative; }
+        .refresh-spinner { text-align: center; padding: 10px; display: none; color: var(--primary); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 9/16; background: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card img, .card video { width: 100%; height: 100%; object-fit: cover; }
+        .dl-btn { position: absolute; bottom: 8px; right: 8px; background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 14px; }
+        .empty { display: none; text-align: center; margin-top: 50px; color: #888; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="header">
-            <a href="index.html" style="color: white;"><i class="fa-solid fa-arrow-left"></i></a>
-            <h1 style="font-size: 1.2rem;">Status Saver</h1>
-        </div>
+        <div class="header"><a href="index.html" style="color:white"><i class="fa-solid fa-arrow-left"></i></a> <h1>Status Saver</h1></div>
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('images')">Images</button>
-            <button class="tab-btn" onclick="switchTab('videos')">Videos</button>
+            <button class="tab-btn active" onclick="switchTab('img')">Images</button>
+            <button class="tab-btn" onclick="switchTab('vid')">Videos</button>
         </div>
-        <div class="content-area">
-            <div class="loader-container" id="loader"><div class="spinner"></div><p style="margin-top:15px;">Loading Native Bridge...</p></div>
-            <div class="empty-state" id="emptyState"><i class="fa-solid fa-folder-open" style="font-size:40px;"></i><p id="errorText">No statuses found.</p></div>
-            <div class="grid-container" id="statusGrid"></div>
+        <div class="content-area" id="scrollArea">
+            <div class="refresh-spinner" id="refreshLoader"><i class="fas fa-sync fa-spin"></i> Refreshing...</div>
+            <div class="grid" id="statusGrid"></div>
+            <div class="empty" id="emptyState"><i class="fa-solid fa-folder-open" style="font-size:40px"></i><p>No statuses found.</p></div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
     <script>
-        let realImages = []; let realVideos = [];
-
-        document.addEventListener("DOMContentLoaded", () => {
-            setTimeout(loadStatuses, 800);
+        let imgList = [], vidList = [], activeTab = 'img';
+        
+        // Pull to Refresh Logic
+        let touchStart = 0;
+        document.getElementById('scrollArea').addEventListener('touchstart', e => touchStart = e.touches[0].pageY);
+        document.getElementById('scrollArea').addEventListener('touchmove', e => {
+            const touchMove = e.touches[0].pageY;
+            if (touchMove - touchStart > 150 && document.getElementById('scrollArea').scrollTop === 0) {
+                refreshData();
+            }
         });
 
-        async function loadStatuses() {
-            try {
-                // ڈائریکٹ نیٹو جاوا سے کنکشن (registerPlugin ختم کر دیا)
-                const nativeBridge = window.Capacitor?.Plugins?.AppNativePlugin;
-                
-                if (!nativeBridge) {
-                    throw new Error("Native Connection Failed. Plugin not linked.");
-                }
-
-                const result = await nativeBridge.getStatuses();
-                
-                realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
-                realVideos = result.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));
-                
-                document.getElementById('loader').style.display = 'none';
-                renderStatuses(realImages, 'images');
-                
-            } catch (err) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('emptyState').style.display = 'block';
-                
-                if (err.message === "needs_permission") {
-                    document.getElementById('errorText').innerHTML = "Native Permission Required! Allow 'All Files Access' to read statuses.";
-                } else {
-                    document.getElementById('errorText').innerHTML = "Native Error: " + err.message;
-                }
-            }
+        async function refreshData() {
+            document.getElementById('refreshLoader').style.display = 'block';
+            await loadData();
+            setTimeout(() => document.getElementById('refreshLoader').style.display = 'none', 1000);
         }
 
-        function renderStatuses(mediaArray, type) {
+        async function loadData() {
+            try {
+                const bridge = window.Capacitor.Plugins.AppNativePlugin;
+                const res = await bridge.getStatuses();
+                imgList = res.statuses.filter(p => p.toLowerCase().match(/\.(jpg|jpeg)$/));
+                vidList = res.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));
+                render();
+            } catch (e) { console.error(e); }
+        }
+
+        function render() {
             const grid = document.getElementById('statusGrid');
+            const data = activeTab === 'img' ? imgList : vidList;
             grid.innerHTML = '';
-            if (mediaArray.length === 0) {
-                grid.style.display = 'none';
+            if(data.length === 0) {
                 document.getElementById('emptyState').style.display = 'block';
                 return;
             }
             document.getElementById('emptyState').style.display = 'none';
-            grid.style.display = 'grid';
-            mediaArray.forEach(path => {
-                const webPath = Capacitor.convertFileSrc(path);
+            data.forEach(p => {
                 const card = document.createElement('div');
-                card.className = 'status-card';
-                card.innerHTML = type === 'images' ? `<img src="${webPath}" class="status-media">` : `<video src="${webPath}" class="status-media" controls></video>`;
-                card.innerHTML += `<div class="download-btn" onclick="alert('Status saved from: ${path.replace(/'/g, "\\'")}')"><i class="fa-solid fa-download"></i></div>`;
+                card.className = 'card';
+                const src = Capacitor.convertFileSrc(p);
+                card.innerHTML = activeTab === 'img' ? `<img src="${src}">` : `<video src="${src}"></video>`;
+                card.innerHTML += `<div class="dl-btn" onclick="alert('Saved to Gallery')"><i class="fa-solid fa-download"></i></div>`;
                 grid.appendChild(card);
             });
         }
 
-        function switchTab(type) {
+        function switchTab(t) {
+            activeTab = t;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            renderStatuses(type === 'images' ? realImages : realVideos, type);
+            render();
         }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
