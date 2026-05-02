@@ -18,14 +18,14 @@ import java.io.File;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // Plugin registration (Must be before super.onCreate)
-        registerPlugin(AppNativePlugin.class);
+        // یہ لائن پہلے آئے گی! (انجن اسٹارٹ)
         super.onCreate(savedInstanceState);
+        // یہ لائن بعد میں آئے گی! (پلگ ان رجسٹریشن)
+        registerPlugin(AppNativePlugin.class);
     }
 
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
-        
         @PluginMethod
         public void getStatuses(PluginCall call) {
             JSObject ret = new JSObject();
@@ -62,7 +62,7 @@ public class MainActivity extends BridgeActivity {
                 }
                 ret.put("statuses", statusArray);
                 call.resolve(ret);
-            } catch (Exception e) { call.reject("error"); }
+            } catch (Exception e) { call.reject(e.getMessage()); }
         }
 
         @PluginMethod
@@ -72,7 +72,7 @@ public class MainActivity extends BridgeActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getContext().startActivity(intent);
                 call.resolve();
-            } catch (Exception e) { call.reject("error"); }
+            } catch (Exception e) { call.reject(e.getMessage()); }
         }
     }
 }

@@ -30,18 +30,10 @@
     </div>
 
     <script>
-        let AppNativePlugin;
-        try {
-            AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
-        } catch (e) {
-            console.error(e);
-        }
-
         async function requestPermission() {
             try {
-                if (!AppNativePlugin) {
-                    throw new Error("AppNativePlugin not found in Capacitor Plugins");
-                }
+                // یہ درست اور سب سے محفوظ طریقہ ہے
+                const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
                 await AppNativePlugin.openNotificationSettings();
             } catch (err) {
                 alert("Error Details: " + err.message);
