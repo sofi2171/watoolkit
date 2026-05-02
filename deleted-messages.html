@@ -32,8 +32,17 @@
     <script>
         async function requestPermission() {
             try {
-                // Safe tareeqa Capacitor plugin call karne ka
-                const nativeBridge = Capacitor.Plugins.AppNativePlugin || Capacitor.registerPlugin('AppNativePlugin');
+                if (!window.Capacitor || !window.Capacitor.Plugins) {
+                    throw new Error("Capacitor core is not ready");
+                }
+
+                // FIXED: registerPlugin hata kar seedha Plugins se call kiya
+                const nativeBridge = window.Capacitor.Plugins.AppNativePlugin;
+                
+                if (!nativeBridge) {
+                    throw new Error("AppNativePlugin not found in Capacitor Plugins");
+                }
+
                 await nativeBridge.openNotificationSettings();
             } catch (err) {
                 alert("Error Details: " + err.message);
