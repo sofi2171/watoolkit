@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WA Toolkit PRO</title>
+</head>
+<body>
+
+<h2>WhatsApp Status Saver</h2>
+
+<button onclick="showGuide()">Guide</button><br><br>
+
+<button onclick="pickFolder()">Select Status Folder</button><br><br>
+
+<button onclick="openNotificationSettings()">Enable Notification Access</button>
+
+<p>After selecting folder, use file manager to view/download statuses.</p>
+
+<script src="app.js"></script>
+
+
+    <script>
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                // Jab user settings se wapas aaye toh half second baad page reload karo
+                setTimeout(() => {
+                    location.reload(); 
+                }, 500);
+            }
+        });
+    </script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                    window.Capacitor.Plugins.App.addListener("appStateChange", ({ isActive }) => {
+                        if (isActive) {
+                            setTimeout(() => { location.reload(); }, 500);
+                        }
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+    </body>
+</html>
