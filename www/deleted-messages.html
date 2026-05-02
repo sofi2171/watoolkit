@@ -30,11 +30,11 @@
     </div>
 
     <script>
-        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
-
         async function requestPermission() {
             try {
-                await AppNativePlugin.openNotificationSettings();
+                // Safe tareeqa Capacitor plugin call karne ka
+                const nativeBridge = Capacitor.Plugins.AppNativePlugin || Capacitor.registerPlugin('AppNativePlugin');
+                await nativeBridge.openNotificationSettings();
             } catch (err) {
                 alert("Error Details: " + err.message);
             }

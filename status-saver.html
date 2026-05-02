@@ -44,7 +44,6 @@
     </div>
 
     <script>
-        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
         let realImages = []; let realVideos = [];
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -53,7 +52,10 @@
 
         async function loadStatuses() {
             try {
-                const result = await AppNativePlugin.getStatuses();
+                // Yahan humne Global variable hata kar safe tareeqay se call kiya hai
+                const nativeBridge = Capacitor.Plugins.AppNativePlugin || Capacitor.registerPlugin('AppNativePlugin');
+                
+                const result = await nativeBridge.getStatuses();
                 
                 realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
                 realVideos = result.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));
@@ -67,8 +69,6 @@
                 
                 if (err.message === "needs_permission") {
                     document.getElementById('errorText').innerHTML = "Permission Required! Allow 'All Files Access' to read statuses.";
-                } else if (err.message.includes("implementation")) {
-                    document.getElementById('errorText').innerHTML = "Native bridge not linked. Error: Plugin not found.";
                 } else {
                     document.getElementById('errorText').innerHTML = "Folders are empty or Error: " + err.message;
                 }
