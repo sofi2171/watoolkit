@@ -17,5 +17,16 @@
 
 <script src="app.js"></script>
 
-</body>
+
+    <script>
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                // Jab user settings se wapas aaye toh half second baad page reload karo
+                setTimeout(() => {
+                    location.reload(); 
+                }, 500);
+            }
+        });
+    </script>
+    </body>
 </html>
