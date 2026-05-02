@@ -39,24 +39,22 @@ public class MainActivity extends BridgeActivity {
                         return;
                     }
                 }
-                
-                // Android 11+ کے لیے مخصوص پاتھ (com.whatsapp)
-                String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+                String base = Environment.getExternalStorageDirectory().getAbsolutePath();
                 String[] paths = {
-                    baseDir + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
-                    baseDir + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
-                    baseDir + "/WhatsApp/Media/.Statuses",
-                    baseDir + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
-                    baseDir + "/WhatsApp Business/Media/.Statuses"
+                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
+                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
+                    base + "/WhatsApp/Media/.Statuses",
+                    base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
+                    base + "/WhatsApp Business/Media/.Statuses"
                 };
-
                 for (String p : paths) {
                     File dir = new File(p);
                     if (dir.exists() && dir.isDirectory()) {
                         File[] files = dir.listFiles();
                         if (files != null) {
                             for (File f : files) {
-                                if (f.isFile() && (f.getName().toLowerCase().endsWith(".jpg") || f.getName().toLowerCase().endsWith(".mp4"))) {
+                                String n = f.getName().toLowerCase();
+                                if (f.isFile() && (n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".mp4"))) {
                                     statusArray.put(f.getAbsolutePath());
                                 }
                             }
@@ -71,11 +69,11 @@ public class MainActivity extends BridgeActivity {
         @PluginMethod
         public void openNotificationSettings(PluginCall call) {
             try {
-                Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getContext().startActivity(intent);
+                Intent i = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(i);
                 call.resolve();
-            } catch (Exception e) { call.reject(e.getMessage()); }
+            } catch (Exception e) { call.reject("Error"); }
         }
     }
 }
