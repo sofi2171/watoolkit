@@ -2,57 +2,72 @@ package com.sufian.watoolkit;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-
+import android.os.Environment;
+import android.provider.Settings;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.JSObject;
+import org.json.JSONArray;
+import java.io.File;
 
 public class MainActivity extends BridgeActivity {
-
-    public static Uri folderUri = null;
-    public static final int PICK_FOLDER = 999;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         registerPlugin(AppNativePlugin.class);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_FOLDER && data != null) {
-            folderUri = data.getData();
-        }
+        super.onCreate(savedInstanceState);
     }
 
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
-
+        
         @PluginMethod
-        public void pickFolder(PluginCall call) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                getActivity().startActivityForResult(intent, PICK_FOLDER);
-                call.resolve();
-            } catch (Exception e) {
-                call.reject("Error opening picker");
-            }
-        }
-
-        @PluginMethod
-        public void getFolder(PluginCall call) {
+        public void getStatuses(PluginCall call) {
             JSObject ret = new JSObject();
-            if (folderUri != null) {
-                ret.put("uri", folderUri.toString());
+            JSONArray statusArray = new JSONArray();
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (!Environment.isExternalStorageManager()) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(intent);
+                        call.reject("needs_permission");
+                        return;
+                    }
+                }
+
+                String base = Environment.getExternalStorageDirectory().getAbsolutePath();
+                String[] paths = {
+                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
+                    base + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
+                    base + "/WhatsApp/Media/.Statuses",
+                    base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
+                    base + "/WhatsApp Business/Media/.Statuses"
+                };
+
+                for (String p : paths) {
+                    File dir = new File(p);
+                    if (dir.exists() && dir.isDirectory()) {
+                        File[] files = dir.listFiles();
+                        if (files != null) {
+                            for (File f : files) {
+                                String n = f.getName().toLowerCase();
+                                if (f.isFile() && (n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".mp4"))) {
+                                    statusArray.put(f.getAbsolutePath());
+                                }
+                            }
+                        }
+                    }
+                }
+                ret.put("statuses", statusArray);
                 call.resolve(ret);
-            } else {
-                call.reject("No folder selected");
+            } catch (Exception e) {
+                call.reject(e.getMessage());
             }
         }
 
@@ -64,7 +79,7 @@ public class MainActivity extends BridgeActivity {
                 getContext().startActivity(i);
                 call.resolve();
             } catch (Exception e) {
-                call.reject("Error");
+                call.reject("Native Error: Could not open settings");
             }
         }
     }
