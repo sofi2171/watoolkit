@@ -29,14 +29,16 @@ public class MainActivity extends BridgeActivity {
             JSObject ret = new JSObject();
             JSONArray statusArray = new JSONArray();
             try {
-                // All Files Access Permission for Android 11+
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                    intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    getContext().startActivity(intent);
-                    call.reject("permission_needed");
-                    return;
+                // Android 11+ All Files Access Check
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (!Environment.isExternalStorageManager()) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(intent);
+                        call.reject("permission_needed");
+                        return;
+                    }
                 }
 
                 String base = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -66,9 +68,9 @@ public class MainActivity extends BridgeActivity {
 
         @PluginMethod
         public void openNotificationSettings(PluginCall call) {
-            Intent i = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getContext().startActivity(i);
+            Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
             call.resolve();
         }
     }
