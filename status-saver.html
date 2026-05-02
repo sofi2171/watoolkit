@@ -44,18 +44,18 @@
     </div>
 
     <script>
-        // NATIVE PLUGIN KO REGISTER KARNA (Yahi masla tha!)
-        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
-        
         let realImages = []; let realVideos = [];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            setTimeout(loadStatuses, 500);
-        });
+        window.onload = () => {
+            setTimeout(loadStatuses, 800); // 0.8s wait karega taake Capacitor ready ho jaye
+        };
 
         async function loadStatuses() {
             try {
-                // Java Code ko Call kar raha hai
+                if (!window.Capacitor) throw new Error("Capacitor Missing");
+                
+                // Plugin JS function ke andar bulaya hai taake error na aaye
+                const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
                 const result = await AppNativePlugin.getStatuses();
                 
                 realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
@@ -65,14 +65,14 @@
                 renderStatuses(realImages, 'images');
                 
             } catch (err) {
+                console.error(err);
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('emptyState').style.display = 'block';
                 
-                // Agar permission chahiye to error show karo warna default
                 if (err.message === "needs_permission") {
                     document.getElementById('errorText').innerHTML = "Permission Required! Allow 'All Files Access' to read statuses.";
                 } else {
-                    document.getElementById('errorText').innerHTML = "Hidden status folders are empty. Please view some statuses on WhatsApp first.";
+                    document.getElementById('errorText').innerHTML = "No status found. View some statuses in WhatsApp first.";
                 }
             }
         }
@@ -92,7 +92,7 @@
                 const card = document.createElement('div');
                 card.className = 'status-card';
                 card.innerHTML = type === 'images' ? `<img src="${webPath}" class="status-media">` : `<video src="${webPath}" class="status-media" controls></video>`;
-                card.innerHTML += `<div class="download-btn" onclick="alert('Status saved from: ${path.replace(/'/g, "\\'")}')"><i class="fa-solid fa-download"></i></div>`;
+                card.innerHTML += `<div class="download-btn" onclick="alert('File saved to: ${path.replace(/'/g, "\\'")}')"><i class="fa-solid fa-download"></i></div>`;
                 grid.appendChild(card);
             });
         }

@@ -30,15 +30,15 @@
     </div>
 
     <script>
-        // NATIVE PLUGIN KO REGISTER KARNA
-        const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
-
         async function requestPermission() {
             try {
-                // Button dabate hi seedha Phone ki Settings khulegi
+                if (!window.Capacitor) throw new Error("Capacitor Missing");
+                
+                const AppNativePlugin = Capacitor.registerPlugin('AppNativePlugin');
                 await AppNativePlugin.openNotificationSettings();
+                
             } catch (err) {
-                alert("Please go to Settings > Notifications to grant access manually.");
+                alert("Please go to Settings > Notifications manually. Plugin load failed.");
             }
         }
     </script>
