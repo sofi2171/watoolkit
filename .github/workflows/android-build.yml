@@ -3,6 +3,7 @@ name: Build Android APK (Latest Tech)
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,17 +12,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: '22'
 
       - name: Install Dependencies
         run: |
@@ -43,11 +44,9 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # Ye step file dhoondega aur uska path save karega
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: wa-toolkit-premium-apk
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-            android/app/build/outputs/bundle/debug/*.aab
+          # Ye magic line poore project mein APK dhoond legi:
+          path: '**/*.apk'
