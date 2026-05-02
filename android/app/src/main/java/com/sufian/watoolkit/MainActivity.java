@@ -2,11 +2,10 @@ package com.sufian.watoolkit;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
-import android.util.Log;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
@@ -15,11 +14,9 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.JSObject;
 
-import org.json.JSONArray;
-
-import java.io.File;
-
 public class MainActivity extends BridgeActivity {
+
+    public static Uri folderUri = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,67 +27,30 @@ public class MainActivity extends BridgeActivity {
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
 
+        ActivityResultLauncher<Intent> picker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getData() != null) {
+                    folderUri = result.getData().getData();
+                }
+            });
+
         @PluginMethod
-        public void getStatuses(PluginCall call) {
+        public void pickFolder(PluginCall call) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            picker.launch(intent);
+            call.resolve();
+        }
+
+        @PluginMethod
+        public void getFolder(PluginCall call) {
             JSObject ret = new JSObject();
-            JSONArray statusArray = new JSONArray();
-
-            try {
-
-                // Android 11+ Permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (!Environment.isExternalStorageManager()) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        getContext().startActivity(intent);
-                        call.reject("Permission required");
-                        return;
-                    }
-                }
-
-                String base = Environment.getExternalStorageDirectory().getAbsolutePath();
-
-                String[] paths = {
-                        base + "/Android/media/com.whatsapp/WhatsApp/Media/.Statuses",
-                        base + "/Android/media/com.whatsapp/WhatsApp/Media/.statuses",
-                        base + "/WhatsApp/Media/.Statuses",
-                        base + "/WhatsApp/Media/.statuses",
-                        base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses",
-                        base + "/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.statuses",
-                        base + "/WhatsApp Business/Media/.Statuses",
-                        base + "/WhatsApp Business/Media/.statuses"
-                };
-
-                for (String p : paths) {
-                    File dir = new File(p);
-
-                    Log.d("STATUS_DEBUG", "Checking: " + p + " exists=" + dir.exists());
-
-                    if (dir.exists() && dir.isDirectory()) {
-                        File[] files = dir.listFiles();
-
-                        if (files != null) {
-                            for (File f : files) {
-                                String name = f.getName().toLowerCase();
-
-                                if (f.isFile() &&
-                                        (name.endsWith(".jpg") ||
-                                         name.endsWith(".jpeg") ||
-                                         name.endsWith(".mp4"))) {
-
-                                    statusArray.put(f.getAbsolutePath());
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ret.put("statuses", statusArray);
+            if (folderUri != null) {
+                ret.put("uri", folderUri.toString());
                 call.resolve(ret);
-
-            } catch (Exception e) {
-                call.reject(e.toString());
+            } else {
+                call.reject("No folder selected");
             }
         }
 
@@ -102,7 +62,7 @@ public class MainActivity extends BridgeActivity {
                 getContext().startActivity(i);
                 call.resolve();
             } catch (Exception e) {
-                call.reject("Error opening settings");
+                call.reject("Error");
             }
         }
     }
