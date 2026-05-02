@@ -47,4 +47,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wa-toolkit-premium-apk
-          path: "android/app/build/outputs/apk/debug/*.apk"
+          # Ye line ab poore folder mein APK dhoondegi
+          path: android/**/*.apk
+          if-no-files-found: error
