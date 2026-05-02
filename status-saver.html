@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIP Status Saver</title>
+    <title>VIP Status Saver Pro</title>
     <style>
         body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
         header { background: #075e54; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 100;}
@@ -13,10 +13,10 @@
         .tab.active { opacity: 1; border-bottom: 3px solid white; }
         .container { padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
         .card { width: calc(50% - 5px); background: #000; border-radius: 8px; overflow: hidden; position: relative; height: 160px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .media-box { width: 100%; height: 100%; cursor: pointer; }
-        .card img, .card video { width: 100%; height: 100%; object-fit: cover; }
-        .download-btn { position: absolute; bottom: 8px; right: 8px; background: #25d366; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10; cursor: pointer;}
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 45px; text-shadow: 0 2px 5px rgba(0,0,0,0.6); pointer-events: none;}
+        .media-box { width: 100%; height: 100%; cursor: pointer; position: relative; }
+        .card img, .card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .download-btn { position: absolute; bottom: 8px; right: 8px; background: #25d366; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 50; cursor: pointer;}
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 45px; text-shadow: 0 2px 5px rgba(0,0,0,0.6); pointer-events: none; z-index: 5;}
         #permission-box { text-align: center; padding: 40px 20px; display: none; }
         .btn { background: #128c7e; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-size: 16px; margin-top: 15px; font-weight: bold; cursor: pointer; }
         #loading-text { text-align:center; width:100%; color:#555; display:none; padding-top: 20px; font-weight: bold;}
@@ -25,7 +25,7 @@
 <body>
     <header>
         <span class="back-btn" onclick="window.location.href='index.html'">←</span> 
-        VIP Status Saver
+        VIP Status Saver Pro
     </header>
     <div class="tabs">
         <div class="tab active" onclick="switchTab('images')">Images</div>
@@ -39,7 +39,6 @@
     </div>
     
     <div id="loading-text">Scanning all WhatsApp folders... ⏳</div>
-
     <div class="container" id="media-container"></div>
 
     <script>
@@ -68,13 +67,11 @@
             container.innerHTML = '';
 
             const fs = window.Capacitor.Plugins.Filesystem;
-            
-            // Yahan humne saare possible paths daal diye hain (Old & New)
             const pathsToTry = [
-                'WhatsApp/Media/.Statuses', // Old Android / Legacy
-                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses', // New Android 11+
-                'WhatsApp Business/Media/.Statuses', // Old WA Business
-                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses' // New WA Business
+                'WhatsApp/Media/.Statuses',
+                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses',
+                'WhatsApp Business/Media/.Statuses',
+                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses'
             ];
 
             let uniqueMap = new Map();
@@ -82,35 +79,27 @@
 
             for (let path of pathsToTry) {
                 try {
-                    const result = await fs.readdir({
-                        path: path,
-                        directory: 'EXTERNAL_STORAGE'
-                    });
-                    
+                    const result = await fs.readdir({ path: path, directory: 'EXTERNAL_STORAGE' });
                     if (result && result.files) {
                         foundAnyFolder = true;
                         result.files.forEach(f => {
-                            let fileName = f.name || f; // Handle different Capacitor versions
+                            let fileName = f.name || f;
                             let fileUri = f.uri || "";
                             if(fileName.endsWith('.jpg') || fileName.endsWith('.mp4')) {
                                 uniqueMap.set(fileName, { name: fileName, uri: fileUri, path: path });
                             }
                         });
                     }
-                } catch(e) {
-                    // Agar ek path na mile toh error mat do, agla path try karo (Silent Catch)
-                }
+                } catch(e) {}
             }
 
             loadingText.style.display = 'none';
             allStatuses = Array.from(uniqueMap.values());
 
             if (!foundAnyFolder) {
-                // Agar koi bhi folder nahi mila, tab permission box dobara dikhao
                 permBox.style.display = 'block';
-                document.querySelector('#permission-box p').innerHTML = "<b style='color:red;'>Path Not Found!</b><br><br>Make sure you have WhatsApp installed and have viewed some statuses.<br>Also check if Storage permission is allowed in settings.";
             } else if(allStatuses.length === 0) {
-                container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">No recent statuses found! Open WhatsApp and view some first.</h3>';
+                container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">No recent statuses found!</h3>';
             } else {
                 renderMedia();
             }
@@ -126,11 +115,9 @@
         function renderMedia() {
             const container = document.getElementById('media-container');
             container.innerHTML = '';
-            
             const filtered = allStatuses.filter(f => currentTab === 'images' ? f.name.endsWith('.jpg') : f.name.endsWith('.mp4'));
 
             filtered.forEach(file => {
-                // Generate absolute URI if Capacitor didn't provide one
                 let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
                 
                 const card = document.createElement('div');
@@ -142,7 +129,8 @@
                 if(currentTab === 'images') {
                     mediaBox.innerHTML = `<img src="${src}">`;
                 } else {
-                    mediaBox.innerHTML = `<video src="${src}" preload="auto" playsinline muted></video><div class="play-icon">▶</div>`;
+                    // Video Thumbnail Hack: #t=0.1 preload metadata
+                    mediaBox.innerHTML = `<video src="${src}#t=0.1" preload="metadata" playsinline muted></video><div class="play-icon">▶</div>`;
                 }
                 
                 mediaBox.onclick = () => viewMedia(src, currentTab === 'images' ? 'image' : 'video');
@@ -151,7 +139,6 @@
                 const btn = document.createElement('button');
                 btn.className = 'download-btn';
                 btn.innerHTML = '⬇';
-                // Use original path for downloading
                 const downloadUri = file.uri ? file.uri : file.path + '/' + file.name;
                 btn.onclick = (e) => { e.stopPropagation(); downloadMedia(downloadUri, file.name); };
                 card.appendChild(btn);
@@ -163,22 +150,11 @@
         async function downloadMedia(uriOrPath, name) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
-                
-                let copyOptions = {
-                    to: 'Download/' + name,
-                    toDirectory: 'EXTERNAL_STORAGE'
-                };
-
-                // Handle both full URIs and relative paths for copying
-                if (uriOrPath.startsWith('file://')) {
-                    copyOptions.from = uriOrPath;
-                } else {
-                    copyOptions.path = uriOrPath;
-                    copyOptions.directory = 'EXTERNAL_STORAGE';
-                }
-
+                let copyOptions = { to: 'Download/' + name, toDirectory: 'EXTERNAL_STORAGE' };
+                if (uriOrPath.startsWith('file://')) { copyOptions.from = uriOrPath; }
+                else { copyOptions.path = uriOrPath; copyOptions.directory = 'EXTERNAL_STORAGE'; }
                 await fs.copy(copyOptions);
-                alert('✅ Saved successfully in Downloads folder!');
+                alert('✅ Status Saved in Downloads folder!');
             } catch(e) {
                 alert('⚠️ Download Failed: ' + e.message);
             }
@@ -190,15 +166,23 @@
             
             const closeBtn = document.createElement('div');
             closeBtn.innerText = '✖';
-            closeBtn.style.cssText = 'position:absolute; top:20px; right:20px; color:white; font-size:35px; z-index:100000; background: rgba(0,0,0,0.5); border-radius:50%; width: 50px; height: 50px; display:flex; justify-content:center; align-items:center; cursor:pointer;';
-            closeBtn.onclick = () => document.body.removeChild(viewer);
-            viewer.appendChild(closeBtn);
+            closeBtn.style.cssText = 'position:absolute; top:20px; right:20px; color:white; font-size:35px; z-index:1000000; background: rgba(0,0,0,0.5); border-radius:50%; width: 50px; height: 50px; display:flex; justify-content:center; align-items:center; cursor:pointer;';
+            
+            // Fixed Close Action
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                document.body.removeChild(viewer);
+            };
 
+            let content;
             if(type === 'image') {
-                viewer.innerHTML += `<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+                content = `<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
             } else {
-                viewer.innerHTML += `<video src="${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain; outline:none;"></video>`;
+                content = `<video src="${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain; outline:none;"></video>`;
             }
+
+            viewer.innerHTML = content;
+            viewer.appendChild(closeBtn);
             document.body.appendChild(viewer);
         }
     </script>
