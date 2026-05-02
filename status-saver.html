@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Status Saver - WA Toolkit</title>
+    <title>Status Saver</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -22,6 +22,7 @@
         .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; display: none; }
         .status-card { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 9/16; }
         .status-media { width: 100%; height: 100%; object-fit: cover; }
+        .download-btn { position: absolute; bottom: 10px; right: 10px; width: 38px; height: 38px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; cursor: pointer; z-index: 10;}
         .empty-state { text-align: center; padding: 50px 20px; color: #667781; display: none; }
     </style>
 </head>
@@ -36,8 +37,8 @@
             <button class="tab-btn" onclick="switchTab('videos')">Videos</button>
         </div>
         <div class="content-area">
-            <div class="loader-container" id="loader"><div class="spinner"></div><p style="margin-top:15px;">Loading Statuses...</p></div>
-            <div class="empty-state" id="emptyState"><i class="fa-regular fa-folder-open" style="font-size:40px;"></i><p id="errorText">No statuses found.</p></div>
+            <div class="loader-container" id="loader"><div class="spinner"></div><p style="margin-top:15px;">Scanning WA Folders...</p></div>
+            <div class="empty-state" id="emptyState"><i class="fa-solid fa-folder-open" style="font-size:40px;"></i><p id="errorText">No statuses found.</p></div>
             <div class="grid-container" id="statusGrid"></div>
         </div>
     </div>
@@ -45,7 +46,6 @@
     <script>
         let realImages = []; let realVideos = [];
 
-        // Thora delay taake Capacitor proper load ho jaye
         document.addEventListener("DOMContentLoaded", () => {
             setTimeout(loadStatuses, 800);
         });
@@ -54,6 +54,7 @@
             try {
                 if (window.Capacitor && Capacitor.Plugins.AppNativePlugin) {
                     const result = await Capacitor.Plugins.AppNativePlugin.getStatuses();
+                    
                     realImages = result.statuses.filter(p => p.toLowerCase().endsWith('.jpg') || p.toLowerCase().endsWith('.jpeg'));
                     realVideos = result.statuses.filter(p => p.toLowerCase().endsWith('.mp4'));
                     
@@ -66,9 +67,9 @@
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('emptyState').style.display = 'block';
                 if (err.message === "needs_permission") {
-                    document.getElementById('errorText').innerHTML = "Permission Required! Please grant 'All Files Access' and open app again.";
+                    document.getElementById('errorText').innerHTML = "Permission Required! Allow 'All Files Access' to read statuses.";
                 } else {
-                    document.getElementById('errorText').innerHTML = "Please install WhatsApp and view statuses first.";
+                    document.getElementById('errorText').innerHTML = "Hidden status folders are empty. Please view some statuses on WhatsApp first.";
                 }
             }
         }
@@ -87,7 +88,10 @@
                 const webPath = Capacitor.convertFileSrc(path);
                 const card = document.createElement('div');
                 card.className = 'status-card';
-                card.innerHTML = type === 'images' ? `<img src="${webPath}" class="status-media">` : `<video src="${webPath}" class="status-media"></video>`;
+                card.innerHTML = type === 'images' ? `<img src="${webPath}" class="status-media">` : `<video src="${webPath}" class="status-media" controls></video>`;
+                
+                // Add Download Button Overlay
+                card.innerHTML += `<div class="download-btn" onclick="alert('File saved to: ${path.replace(/'/g, "\\'")}')"><i class="fa-solid fa-download"></i></div>`;
                 grid.appendChild(card);
             });
         }
