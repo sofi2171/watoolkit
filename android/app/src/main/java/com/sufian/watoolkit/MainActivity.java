@@ -4,9 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -17,6 +14,7 @@ import com.getcapacitor.JSObject;
 public class MainActivity extends BridgeActivity {
 
     public static Uri folderUri = null;
+    public static final int PICK_FOLDER = 999;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -24,23 +22,27 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(AppNativePlugin.class);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_FOLDER && data != null) {
+            folderUri = data.getData();
+        }
+    }
+
     @CapacitorPlugin(name = "AppNativePlugin")
     public static class AppNativePlugin extends Plugin {
 
-        ActivityResultLauncher<Intent> picker =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getData() != null) {
-                    folderUri = result.getData().getData();
-                }
-            });
-
         @PluginMethod
         public void pickFolder(PluginCall call) {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            picker.launch(intent);
-            call.resolve();
+            try {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                getActivity().startActivityForResult(intent, PICK_FOLDER);
+                call.resolve();
+            } catch (Exception e) {
+                call.reject("Error opening picker");
+            }
         }
 
         @PluginMethod
