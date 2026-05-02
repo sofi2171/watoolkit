@@ -3,29 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIP Status Saver Pro</title>
+    <title>Status Saver Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
-        header { background: #075e54; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 100;}
-        .back-btn { float: left; cursor: pointer; font-size: 22px; margin-top: -2px; }
+        body { font-family: sans-serif; margin: 0; background: #f0f2f5; -webkit-user-select: none; user-select: none; }
+        header { background: #075e54; color: white; padding: 12px 15px; text-align: center; font-size: 19px; font-weight: bold; position: sticky; top: 0; z-index: 100; display: flex; align-items: center;}
+        .back-btn { cursor: pointer; font-size: 20px; margin-right: 15px; }
         .tabs { display: flex; background: #128c7e; }
-        .tab { flex: 1; text-align: center; padding: 12px; color: white; opacity: 0.7; font-weight: bold; transition: 0.3s; cursor: pointer; }
+        .tab { flex: 1; text-align: center; padding: 12px; color: white; opacity: 0.7; font-weight: bold; transition: 0.3s; cursor: pointer; text-transform: uppercase; font-size: 14px;}
         .tab.active { opacity: 1; border-bottom: 3px solid white; }
-        .container { padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
-        .card { width: calc(50% - 5px); background: #000; border-radius: 8px; overflow: hidden; position: relative; height: 160px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .container { padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .card { width: calc(50% - 4px); background: #fff; border-radius: 6px; overflow: hidden; position: relative; height: 160px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #ddd;}
         .media-box { width: 100%; height: 100%; cursor: pointer; position: relative; }
-        .card img, .card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .download-btn { position: absolute; bottom: 8px; right: 8px; background: #25d366; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 50; cursor: pointer;}
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 45px; text-shadow: 0 2px 5px rgba(0,0,0,0.6); pointer-events: none; z-index: 5;}
+        .card img, .card video { width: 100%; height: 100%; object-fit: cover; }
+        /* Simple & Professional Download Button outside */
+        .download-btn-out { position: absolute; bottom: 5px; right: 5px; background: rgba(37, 211, 102, 0.9); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; font-size: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; z-index: 10; cursor: pointer; transition: 0.2s;}
+        .download-btn-out:active { transform: scale(0.9); }
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.8); font-size: 40px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); pointer-events: none; z-index: 5;}
+        
         #permission-box { text-align: center; padding: 40px 20px; display: none; }
-        .btn { background: #128c7e; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-size: 16px; margin-top: 15px; font-weight: bold; cursor: pointer; }
-        #loading-text { text-align:center; width:100%; color:#555; display:none; padding-top: 20px; font-weight: bold;}
+        .btn { background: #128c7e; color: white; padding: 11px 22px; border: none; border-radius: 4px; font-size: 15px; margin-top: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase;}
+        #loading-text { text-align:center; width:100%; color:#555; display:none; padding-top: 25px; font-size: 15px;}
+
+        /* Full Screen Viewer Styles (Professional) */
+        #viewer { position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999; display:none; flex-direction:column; justify-content:center; align-items:center; opacity: 0; transition: opacity 0.3s; }
+        #viewer.active { display:flex; opacity: 1; }
+        #viewer-content-box { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        #viewer-content-box img, #viewer-content-box video { max-width:100%; max-height:100%; object-fit:contain; outline:none; }
+        
+        /* Top Bar in Viewer */
+        .viewer-top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; box-sizing: border-box; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent); display: flex; justify-content: space-between; align-items: center; z-index: 100001; }
+        .viewer-close { color: white; font-size: 24px; cursor: pointer; padding: 5px;}
+        .viewer-actions { display: flex; gap: 20px; }
+        /* Simple & Professional Buttons Inside */
+        .viewer-btn { color: white; font-size: 20px; cursor: pointer; padding: 5px; background: none; border: none; transition: 0.2s;}
+        .viewer-btn:active { transform: scale(0.8); color: #25d366; }
     </style>
 </head>
 <body>
     <header>
-        <span class="back-btn" onclick="window.location.href='index.html'">←</span> 
-        VIP Status Saver Pro
+        <i class="fas fa-arrow-left back-btn" onclick="window.location.href='index.html'"></i>
+        Status Saver
     </header>
     <div class="tabs">
         <div class="tab active" onclick="switchTab('images')">Images</div>
@@ -33,17 +51,34 @@
     </div>
 
     <div id="permission-box">
+        <i class="fas fa-folder-open" style="font-size: 50px; color: #ccc;"></i>
         <h2>Permission Required ⚠️</h2>
-        <p>Please grant Storage permission to scan statuses.</p>
+        <p style="color:#666; font-size: 14px; line-height: 1.4;">Please grant Storage permission to scan and save statuses.</p>
         <button class="btn" onclick="askPermission()">Scan Statuses</button>
     </div>
     
-    <div id="loading-text">Scanning all WhatsApp folders... ⏳</div>
+    <div id="loading-text"><i class="fas fa-spinner fa-spin"></i> Scanning WhatsApp folders...</div>
     <div class="container" id="media-container"></div>
+
+    <div id="viewer" onclick="closeViewer()">
+        <div class="viewer-top-bar" onclick="event.stopPropagation()">
+            <i class="fas fa-times viewer-close" onclick="closeViewer()"></i>
+            <div class="viewer-actions">
+                <button class="viewer-btn" id="viewer-share-btn" onclick="shareCurrentMedia()">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="viewer-btn" id="viewer-download-btn">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </div>
+        <div id="viewer-content-box" onclick="event.stopPropagation()"></div>
+    </div>
 
     <script>
         let allStatuses = [];
         let currentTab = 'images';
+        let currentMediaData = null;
 
         window.addEventListener('load', () => { setTimeout(checkAndLoad, 500); });
 
@@ -99,7 +134,7 @@
             if (!foundAnyFolder) {
                 permBox.style.display = 'block';
             } else if(allStatuses.length === 0) {
-                container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555;">No recent statuses found!</h3>';
+                container.innerHTML = '<h3 style="text-align:center; width:100%; color:#555; padding-top:20px; font-size:16px;">No recent statuses found!</h3>';
             } else {
                 renderMedia();
             }
@@ -127,63 +162,86 @@
                 mediaBox.className = 'media-box';
                 
                 if(currentTab === 'images') {
-                    mediaBox.innerHTML = `<img src="${src}">`;
+                    mediaBox.innerHTML = `<img src="${src}" loading="lazy">`;
                 } else {
-                    // Video Thumbnail Hack: #t=0.1 preload metadata
-                    mediaBox.innerHTML = `<video src="${src}#t=0.1" preload="metadata" playsinline muted></video><div class="play-icon">▶</div>`;
+                    mediaBox.innerHTML = `<video src="${src}#t=0.1" preload="metadata" playsinline muted></video><i class="fas fa-play play-icon"></i>`;
                 }
                 
-                mediaBox.onclick = () => viewMedia(src, currentTab === 'images' ? 'image' : 'video');
+                // Click to open full viewer
+                mediaBox.onclick = () => openViewer(file, currentTab === 'images' ? 'image' : 'video');
                 card.appendChild(mediaBox);
 
+                // Simple Download Button outside
                 const btn = document.createElement('button');
-                btn.className = 'download-btn';
-                btn.innerHTML = '⬇';
-                const downloadUri = file.uri ? file.uri : file.path + '/' + file.name;
-                btn.onclick = (e) => { e.stopPropagation(); downloadMedia(downloadUri, file.name); };
+                btn.className = 'download-btn-out';
+                btn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                btn.onclick = (e) => { e.stopPropagation(); downloadMedia(file); };
                 card.appendChild(btn);
 
                 container.appendChild(card);
             });
         }
 
-        async function downloadMedia(uriOrPath, name) {
+        async function downloadMedia(file) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
-                let copyOptions = { to: 'Download/' + name, toDirectory: 'EXTERNAL_STORAGE' };
-                if (uriOrPath.startsWith('file://')) { copyOptions.from = uriOrPath; }
+                let uriOrPath = file.uri ? file.uri : file.path + '/' + file.name;
+                let copyOptions = { to: 'Download/' + file.name, toDirectory: 'EXTERNAL_STORAGE' };
+                if (file.uri && file.uri.startsWith('file://')) { copyOptions.from = file.uri; }
                 else { copyOptions.path = uriOrPath; copyOptions.directory = 'EXTERNAL_STORAGE'; }
                 await fs.copy(copyOptions);
-                alert('✅ Status Saved in Downloads folder!');
+                alert('✅ Saved in Downloads/Gallery folder!');
             } catch(e) {
                 alert('⚠️ Download Failed: ' + e.message);
             }
         }
 
-        function viewMedia(src, type) {
-            const viewer = document.createElement('div');
-            viewer.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999; display:flex; justify-content:center; align-items:center;';
-            
-            const closeBtn = document.createElement('div');
-            closeBtn.innerText = '✖';
-            closeBtn.style.cssText = 'position:absolute; top:20px; right:20px; color:white; font-size:35px; z-index:1000000; background: rgba(0,0,0,0.5); border-radius:50%; width: 50px; height: 50px; display:flex; justify-content:center; align-items:center; cursor:pointer;';
-            
-            // Fixed Close Action
-            closeBtn.onclick = (e) => {
-                e.stopPropagation();
-                document.body.removeChild(viewer);
-            };
+        // --- Professional Viewer Functions ---
 
-            let content;
+        function openViewer(file, type) {
+            currentMediaData = file;
+            const viewer = document.getElementById('viewer');
+            const contentBox = document.getElementById('viewer-content-box');
+            contentBox.innerHTML = ''; // Clear previous content
+
+            let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
+
             if(type === 'image') {
-                content = `<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+                contentBox.innerHTML = `<img src="${src}">`;
             } else {
-                content = `<video src="${src}" controls autoplay style="max-width:100%; max-height:100%; object-fit:contain; outline:none;"></video>`;
+                contentBox.innerHTML = `<video src="${src}" controls autoplay playsinline outline="none"></video>`;
             }
 
-            viewer.innerHTML = content;
-            viewer.appendChild(closeBtn);
-            document.body.appendChild(viewer);
+            // Set Download button action inside viewer
+            document.getElementById('viewer-download-btn').onclick = () => downloadMedia(file);
+
+            viewer.classList.add('active');
+        }
+
+        function closeViewer() {
+            const viewer = document.getElementById('viewer');
+            const contentBox = document.getElementById('viewer-content-box');
+            
+            // Stop video if playing
+            const video = contentBox.querySelector('video');
+            if(video) video.pause();
+
+            viewer.classList.remove('active');
+        }
+
+        // Share Function (Requires Plugin Installation later)
+        function shareCurrentMedia() {
+            if(!currentMediaData) return;
+            // Native Share functionality requires installation of '@capacitor/share' plugin.
+            // For now, we will show an alert.
+            alert('Share functionality requires installing "@capacitor/share" plugin via Termux.');
+            // Implementation example when plugin is installed:
+            // window.Capacitor.Plugins.Share.share({
+            //     title: 'WhatsApp Status',
+            //     text: 'Check out this status!',
+            //     url: window.Capacitor.convertFileSrc(currentMediaData.uri),
+            //     dialogTitle: 'Share via'
+            // });
         }
     </script>
 </body>
