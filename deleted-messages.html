@@ -57,10 +57,26 @@
 
         window.onload = () => { checkPermissionAndLoad(); };
 
-        // 🚀 BULLETPROOF SETTINGS LINK FIX
+        // 🚀 BULLETPROOF SETTINGS LINK FIX (Anchor Tag Hack)
         function openSettings() {
-            // Yeh code kisi plugin ke mohtaj nahi, direct android ki ragon mein daure ga
-            window.location.href = "intent://#Intent;action=android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS;end";
+            try {
+                // Hidden button bana kar Android ko dhoka dena
+                var a = document.createElement("a");
+                a.href = "intent:#Intent;action=android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS;end";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Agar kisi bohat sakht mobile ne isay bhi rok diya, toh 1.5 second baad alert de dega
+                setTimeout(function() {
+                    if(document.visibilityState === "visible") {
+                        alert("⚠️ Please manually go to:\nSettings > Notifications > Device & App Notifications > Allow WA Toolkit.");
+                    }
+                }, 1500);
+
+            } catch(e) {
+                alert("Please manually allow Notification Access from settings.");
+            }
         }
 
         async function checkPermissionAndLoad() {
