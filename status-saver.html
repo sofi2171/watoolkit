@@ -100,8 +100,8 @@
                 <div class="perm-icon"><i class="fa-solid fa-folder-open"></i></div>
                 <h2 style="color: var(--text-dark); margin-bottom: 8px;">Storage Access Needed</h2>
                 <p style="color: var(--text-muted); font-size: 0.9rem;">To show you WhatsApp statuses, we need permission to read your media files.</p>
-                <button class="btn-allow" onclick="scanStatuses()">
-                    <i class="fa-solid fa-magnifying-glass"></i> Scan Statuses
+                <button class="btn-allow" onclick="requestPermAndScan()">
+                    <i class="fa-solid fa-magnifying-glass"></i> Grant Permission
                 </button>
             </div>
             
@@ -122,7 +122,7 @@
 
     <div id="viewer">
         <div class="viewer-top">
-            <i class="fa-solid fa-arrow-left" style="font-size: 24px; cursor: pointer; padding: 5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" onclick="closeViewer()"></i>
+            <i class="fa-solid fa-arrow-left" style="font-size: 24px; cursor: pointer; padding: 5px;" onclick="closeViewer()"></i>
             <div class="viewer-actions">
                 <i class="fa-solid fa-share-nodes" id="v-share"></i>
                 <i class="fa-solid fa-download" id="v-down"></i>
@@ -139,6 +139,20 @@
 
         window.onload = () => { setTimeout(scanStatuses, 500); };
 
+        // 🚀 BULLETPROOF PERMISSION FUNCTION
+        async function requestPermAndScan() {
+            try {
+                // Pehle OS se permission maango (For Android 10 and below)
+                if(window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+                    await window.Capacitor.Plugins.Filesystem.requestPermissions();
+                }
+            } catch (e) {
+                console.log("Filesystem perm error: ", e);
+            }
+            // Permission maangne ke baad scan chalao
+            scanStatuses();
+        }
+
         async function scanStatuses() {
             const container = document.getElementById('media-container');
             const permBox = document.getElementById('permission-box');
@@ -151,38 +165,76 @@
             loadingText.style.display = 'block';
 
             try {
-                // Sahi tarike se Java Plugin call karna (Pichli MainActivity wala)
+                // Java Plugin method (For Android 11+)
                 if (window.Capacitor && window.Capacitor.Plugins.AppNativePlugin) {
                     const result = await window.Capacitor.Plugins.AppNativePlugin.getStatuses();
                     let pathsArray = result.statuses || [];
                     
                     if (pathsArray.length > 0) {
-                        // Normalize files
                         allStatuses = pathsArray.map(path => {
                             let name = path.substring(path.lastIndexOf('/') + 1);
-                            return { name: name, path: path };
+                            return { name: name, path: path, uri: '' };
                         });
-                        
                         loadingText.style.display = 'none';
                         renderMedia();
-                    } else {
-                        loadingText.style.display = 'none';
-                        emptyState.style.display = 'block';
+                        return; // Agar mil gaye to yahin ruk jao
                     }
-                } else {
-                    // Agar browser me kholain to ye dikhaye
-                    loadingText.style.display = 'none';
-                    permBox.style.display = 'block';
-                    alert("This feature only works inside the Android App.");
                 }
+                
+                // 🚀 FALLBACK: Agar Java fail ho jaye, to aapka purana Capacitor FS wala tareeqa chalay ga
+                await fallbackScan();
+
             } catch (error) {
                 loadingText.style.display = 'none';
                 if(error.message === "permission_needed") {
                     permBox.style.display = 'block';
                 } else {
-                    permBox.style.display = 'block';
-                    console.error("Error scanning:", error);
+                    // Agar koi aur error aaye to Fallback scan chala do
+                    await fallbackScan();
                 }
+            }
+        }
+
+        // 🚀 AAPKA PURANA BHAROSEMAND TAREEQA (Backup ke tor par)
+        async function fallbackScan() {
+            const fs = window.Capacitor.Plugins.Filesystem;
+            if(!fs) return;
+
+            const pathsToTry = [
+                'WhatsApp/Media/.Statuses', 
+                'Android/media/com.whatsapp/WhatsApp/Media/.Statuses', 
+                'WhatsApp Business/Media/.Statuses', 
+                'Android/media/com.whatsapp.w4b/WhatsApp Business/Media/.Statuses' 
+            ];
+
+            let uniqueMap = new Map();
+            let foundAnyFolder = false;
+
+            for (let path of pathsToTry) {
+                try {
+                    const result = await fs.readdir({ path: path, directory: 'EXTERNAL_STORAGE' });
+                    if (result && result.files) {
+                        foundAnyFolder = true;
+                        result.files.forEach(f => {
+                            let fileName = f.name || f; 
+                            let fileUri = f.uri || "";
+                            if(fileName.endsWith('.jpg') || fileName.endsWith('.mp4') || fileName.endsWith('.jpeg')) {
+                                uniqueMap.set(fileName, { name: fileName, uri: fileUri, path: path });
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+
+            document.getElementById('loading-text').style.display = 'none';
+            allStatuses = Array.from(uniqueMap.values());
+
+            if (!foundAnyFolder && allStatuses.length === 0) {
+                document.getElementById('permission-box').style.display = 'block';
+            } else if (allStatuses.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+            } else {
+                renderMedia();
             }
         }
 
@@ -207,19 +259,19 @@
                 emptyState.style.display = 'none';
                 
                 filtered.forEach(file => {
-                    // Convert raw path to WebView readable URL
-                    let src = window.Capacitor.convertFileSrc('file://' + file.path);
+                    let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file://' + file.path);
+                    if(!file.uri && !file.path.startsWith('/')) {
+                        src = window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
+                    }
                     
                     const card = document.createElement('div');
                     card.className = 'card';
-                    
                     const mediaBox = document.createElement('div');
                     mediaBox.className = 'media-box';
                     
                     if(currentTab === 'images') {
                         mediaBox.innerHTML = `<img src="${src}" loading="lazy">`;
                     } else {
-                        // '#t=0.1' is hack to show thumbnail of video
                         mediaBox.innerHTML = `<video src="${src}#t=0.1" preload="metadata"></video><i class="fa-solid fa-circle-play play-icon"></i>`;
                     }
                     
@@ -240,35 +292,31 @@
         async function downloadMedia(file) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
+                let uriOrPath = file.uri ? file.uri : file.path;
+                let copyOptions = { to: 'Download/WAToolkit_' + file.name, toDirectory: 'EXTERNAL_STORAGE' };
                 
-                // Copy file from WhatsApp hidden folder to public Downloads folder
-                await fs.copy({
-                    from: file.path,
-                    to: 'Download/WAToolkit_' + file.name,
-                    toDirectory: 'EXTERNAL_STORAGE'
-                });
+                if (file.uri && file.uri.startsWith('file://')) { copyOptions.from = file.uri; }
+                else if (file.path && file.path.startsWith('/')) { copyOptions.from = file.path; }
+                else { copyOptions.path = file.path + '/' + file.name; copyOptions.directory = 'EXTERNAL_STORAGE'; }
                 
+                await fs.copy(copyOptions);
                 showToast("✅ Saved to Gallery (Downloads folder)");
             } catch(e) {
                 alert('⚠️ Download Failed: ' + e.message);
             }
         }
 
-        // 🚀 PRO FEATURE: Share Status with Promotional Text
         async function shareMedia(file) {
             try {
-                // App ka promotional message aur link (Localhost nahi, balki website)
                 const promoText = "Check out this awesome status! 🔥\n\nDownloaded using *WA Toolkit Premium*.\nGet the app here: https://healthxray.online/watoolkit";
-
                 const sharePlugin = window.Capacitor.Plugins.Share;
                 
-                await sharePlugin.share({
-                    title: 'Share Status',
-                    text: promoText,
-                    url: 'file://' + file.path, 
-                    dialogTitle: 'Share with friends'
-                });
+                let shareUrl = file.uri ? file.uri : 'file://' + file.path;
+                if(!shareUrl.startsWith('file://')) {
+                    shareUrl = 'file:///storage/emulated/0/' + file.path + '/' + file.name;
+                }
 
+                await sharePlugin.share({ title: 'Share Status', text: promoText, url: shareUrl, dialogTitle: 'Share with friends' });
             } catch (error) {
                 alert("Sharing failed or not supported. " + error);
             }
@@ -278,31 +326,15 @@
             const v = document.getElementById('viewer');
             const c = document.getElementById('viewer-content');
             
-            if (type === 'image') {
-                c.innerHTML = `<img src="${src}">`;
-            } else {
-                c.innerHTML = `<video src="${src}" controls autoplay loop></video>`;
-            }
+            if (type === 'image') { c.innerHTML = `<img src="${src}">`; } 
+            else { c.innerHTML = `<video src="${src}" controls autoplay loop></video>`; }
             
             document.getElementById('v-down').onclick = () => downloadMedia(file);
             document.getElementById('v-share').onclick = () => shareMedia(file);
-            
             v.classList.add('active');
         }
 
         function closeViewer() {
             const v = document.getElementById('viewer');
             const video = document.querySelector('#viewer-content video');
-            if(video) video.pause();
-            v.classList.remove('active');
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-    </script>
-</body>
-</html>
+            if(video) video.
