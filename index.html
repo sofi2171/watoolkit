@@ -65,23 +65,24 @@
             cursor: pointer;
             background: none;
             border: none;
+            padding: 5px;
         }
 
         /* Sidebar Menu */
         .sidebar {
             position: fixed;
             top: 65px;
-            right: -100%;
+            right: -260px; /* Hidden state */
             width: 250px;
             height: calc(100vh - 65px);
             background: var(--white);
             box-shadow: -5px 0 15px rgba(0,0,0,0.05);
-            transition: right 0.3s ease;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
             overflow-y: auto;
         }
 
-        .sidebar.active { right: 0; }
+        .sidebar.active { right: 0; /* Visible state */ }
 
         .sidebar ul { list-style: none; padding: 20px 0; }
         .sidebar ul li { border-bottom: 1px solid #f1f1f1; }
@@ -240,10 +241,10 @@
 
     <nav class="navbar">
         <div class="logo">
-            <i class="fa-brands fa-whatsapp text-green-500"></i> WA Toolkit
+            <i class="fa-brands fa-whatsapp" style="color: var(--accent);"></i> WA Toolkit
         </div>
         <button class="hamburger" id="menu-btn">
-            <i class="fa-solid fa-bars"></i>
+            <i class="fa-solid fa-bars" id="menu-icon"></i>
         </button>
     </nav>
 
@@ -326,37 +327,37 @@
         
         <div class="detail-item">
             <h4><i class="fa-solid fa-download" style="color: var(--primary);"></i> Status Saver Pro</h4>
-            <p>Doston ke lagaye gaye WhatsApp status (HD Videos aur Photos) ko ek click mein apni phone gallery mein permanently save karein. 24 ghante ke baad bhi delete nahi honge.</p>
+            <p>Easily save WhatsApp statuses (HD Videos and Photos) from your friends directly to your phone gallery with a single click. They remain saved even after 24 hours.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-paper-plane" style="color: #2196f3;"></i> Direct Chat (No Save)</h4>
-            <p>Kisi bhi unknown number par message bhejney ke liye ab number phonebook mein save karne ki zaroorat nahi. Bas number type karein aur direct WhatsApp chat open karein.</p>
+            <p>No need to save unknown numbers in your phonebook just to send a message. Simply enter the number and instantly open a direct WhatsApp chat.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-eye-slash" style="color: #e91e63;"></i> Read Deleted Messages</h4>
-            <p>Agar koi aapko message bhej kar 'Delete for Everyone' kar deta hai, to hamara smart notification tracker us message ko save kar leta hai taake aap use easily parh sakein.</p>
+            <p>If someone sends you a message and deletes it for everyone, our smart notification tracker securely saves it so you can read it anytime.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-laptop" style="color: #ff9800;"></i> WA Web Scanner</h4>
-            <p>Ek hi phone mein 2 accounts chalana chahte hain? WA Web scanner ki madad se QR code scan karein aur kisi bhi browser/device ka account apne app mein open karein.</p>
+            <p>Want to use dual accounts on a single phone? Scan the QR code with WA Web Scanner and open any account from another browser or device inside the app.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-ghost" style="color: #9c27b0;"></i> Blank Text Generator</h4>
-            <p>Apne doston ko bilkul khali (empty) message bhej kar hairaan karein. Yeh tool invisible characters generate karta hai jo message ke taur par send kiye ja sakte hain.</p>
+            <p>Surprise your friends by sending completely empty messages. This tool generates invisible characters that are recognized by WhatsApp as valid text.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-font" style="color: #00bcd4;"></i> Fancy Font Styles</h4>
-            <p>Normal boring text ko stylish fonts, emojis, aur cool designs mein convert karein. Apni chat aur profile bio ko unique banane ke liye best tool hai.</p>
+            <p>Convert normal, boring text into stylish fonts, emojis, and cool designs. The perfect tool to make your chats and profile bio stand out.</p>
         </div>
 
         <div class="detail-item">
             <h4><i class="fa-solid fa-bomb" style="color: #ef4444;"></i> Message Bomber (Text Repeater)</h4>
-            <p>Ek hi message ko 10,000 dafa tak repeat karein. Apne doston ke sath prank karne aur unhe tang karne ke liye behtareen tool hai.</p>
+            <p>Repeat a single message up to 10,000 times instantly. A fun tool to prank and playfully annoy your friends with a massive wall of text.</p>
         </div>
     </section>
 
@@ -364,34 +365,45 @@
         <div class="footer-links">
             <a href="privacy-policy.html">Privacy Policy</a>
             <a href="terms.html">Terms & Conditions</a>
-            <a href="about.html">About App</a>
+                        <a href="about.html">About us</a>
         </div>
         <div class="footer-text">
-            <p>&copy; 2026 WA Toolkit. Developed with care.</p>
+            <p>&copy; 2026 WA Toolkit. Developed with SufianX.</p>
             <p style="margin-top: 4px; font-size: 0.7rem;">Not affiliated with WhatsApp Inc.</p>
         </div>
     </footer>
 
     <script>
         const menuBtn = document.getElementById('menu-btn');
+        const menuIcon = document.getElementById('menu-icon');
         const sidebar = document.getElementById('sidebar');
 
-        // Toggle Sidebar
-        menuBtn.addEventListener('click', () => {
+        // Toggle Sidebar - Fixed Event Propagation Bug
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Yeh line click ko document tak jane se rokti hai
             sidebar.classList.toggle('active');
-            // Change Icon (Bars to Cross)
+            
+            // Toggle Icon safely without replacing innerHTML
             if(sidebar.classList.contains('active')) {
-                menuBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-xmark');
             } else {
-                menuBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                menuIcon.classList.remove('fa-xmark');
+                menuIcon.classList.add('fa-bars');
             }
         });
 
-        // Close Sidebar when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target) && sidebar.classList.contains('active')) {
+        // Prevent closing when clicking inside the sidebar itself
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Close Sidebar when clicking anywhere outside
+        document.addEventListener('click', () => {
+            if (sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
-                menuBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                menuIcon.classList.remove('fa-xmark');
+                menuIcon.classList.add('fa-bars');
             }
         });
     </script>
