@@ -279,7 +279,8 @@
         // 🚀 CRASH-PROOF & BULLETPROOF SHARE FIX
         async function shareMedia(file) {
             try {
-                const promoText = "Check out this awesome status! 🔥\n\nDownloaded using *WA Toolkit Premium*.\nGet the app here: https://86xf0kqg.r.ap-southeast-1.awstrack.me/L0/https:%2F%2Fapkpure.com%2Fp%2Fcom.sufian.watoolkit/1/010e019deda9ca9b-dd193135-b9e0-46ac-b9ed-c13e07ea3b9c-000000/c-uv8IQbWlFbo9ddgPxyYmrJxak=258/watoolkit";
+                const appLink = "https://apkpure.com/p/com.sufian.watoolkit";
+const promoText = "Check out this awesome status! 🔥\n\nDownloaded using *WA Toolkit Premium*.\nGet the app here: " + appLink;
                 let shareUri = file.uri;
                 
                 // 1. Android ki pabandiyan (restrictions) todne ke liye hum file ko "Cache" me copy kar rahe hain
