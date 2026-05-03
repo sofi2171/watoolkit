@@ -11,8 +11,9 @@
         :root {
             --primary: #128C7E;
             --primary-dark: #075E54;
-            --danger: #ef4444;
-            --bg-color: #f0f2f5;
+            --hero-grad-1: #dc2626; /* Deep Red */
+            --hero-grad-2: #f97316; /* Orange/Amber */
+            --bg-color: #f8fafc;
             --white: #ffffff;
             --text-dark: #111b21;
             --text-muted: #667781;
@@ -26,61 +27,119 @@
         .app-container { display: flex; flex-direction: column; height: 100dvh; width: 100%; overflow-x: hidden; }
 
         /* Header */
-        .header { background-color: var(--primary); color: var(--white); padding: 16px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; width: 100%; }
+        .header { background-color: var(--primary); color: var(--white); padding: 18px 20px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; width: 100%; }
         .header i { font-size: 20px; cursor: pointer; }
-        .header h1 { font-size: 1.2rem; font-weight: 600; }
+        .header h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: 0.5px; }
 
         /* Content Area */
-        .content-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 20px 15px; width: 100%; }
+        .content-area { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; width: 100%; }
 
-        /* Info Section */
-        .info-section { text-align: center; margin-bottom: 20px; width: 100%; }
-        .info-icon { width: 60px; height: 60px; background: #fef2f2; color: var(--danger); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 25px; margin-bottom: 10px; }
-        .info-section h2 { font-size: 1.1rem; color: var(--text-dark); }
-        .info-section p { font-size: 0.85rem; color: var(--text-muted); }
+        /* VIP Red Hero Banner */
+        .hero-banner { 
+            background: linear-gradient(135deg, var(--hero-grad-1), var(--hero-grad-2)); 
+            border-radius: 20px; 
+            padding: 25px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: white; 
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3); 
+            margin-bottom: 25px; 
+        }
+        .hero-text { flex: 1; padding-right: 15px; }
+        .hero-text h2 { font-size: 1.4rem; line-height: 1.2; font-weight: 700; margin-bottom: 8px; }
+        .hero-text p { font-size: 0.85rem; opacity: 0.9; line-height: 1.4; }
+        
+        /* Bomb Icon in Banner */
+        .hero-icon { 
+            width: 70px; 
+            height: 70px; 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+        .hero-icon i { font-size: 32px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
 
-        /* Form Card */
-        .form-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 20px; width: 100%; }
+        /* Main Form Card */
+        .form-card { 
+            background: var(--white); 
+            padding: 25px 20px; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            margin-bottom: 20px; 
+            width: 100%; 
+            border: 1px solid rgba(0,0,0,0.02);
+        }
         
-        .input-group { margin-bottom: 15px; width: 100%; }
-        .input-group label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; }
+        /* Beautiful Input Groups */
+        .input-group { margin-bottom: 22px; width: 100%; }
+        .label-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .label-icon { width: 32px; height: 32px; background: #fee2e2; color: var(--hero-grad-1); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; }
+        .label-text { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
         
-        .text-input, .num-input { width: 100%; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); }
-        .text-input { height: 60px; resize: none; background: var(--white); }
-        .text-input:focus, .num-input:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+        /* Inputs & Textareas */
+        .text-input, .num-input { 
+            width: 100%; padding: 14px 15px; border: 1.5px solid var(--border); 
+            border-radius: 12px; font-size: 0.95rem; color: var(--text-dark); 
+            outline: none; transition: 0.3s; background: var(--bg-color); font-weight: 500;
+        }
+        .text-input { height: 70px; resize: none; background: var(--white); }
+        .text-input:focus, .num-input:focus { border-color: var(--hero-grad-1); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1); }
 
         /* Flex Row for Number and Checkbox */
-        .row-group { display: flex; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .row-group { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; }
         .row-group .num-box { flex: 1; }
-        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-dark); margin-top: 20px; }
-        .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--danger); }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-dark); font-weight: 600; padding-bottom: 12px;}
+        .checkbox-wrapper input { width: 20px; height: 20px; accent-color: var(--hero-grad-1); cursor: pointer;}
+
+        /* Generate Button */
+        .btn-generate { 
+            width: 100%; background: linear-gradient(135deg, #1e293b, #334155); 
+            color: var(--white); border: none; padding: 16px; border-radius: 14px; 
+            font-size: 1.05rem; font-weight: 600; display: flex; justify-content: center; 
+            align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15); margin-bottom: 25px; 
+        }
+        .btn-generate:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
         /* Preview Box */
-        .preview-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 12px; border-radius: 12px; height: 120px; overflow-y: auto; word-break: break-all; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 20px; }
-        .preview-placeholder { color: #94a3b8; font-size: 0.85rem; display: flex; height: 100%; align-items: center; justify-content: center; }
+        .preview-box { 
+            background: linear-gradient(180deg, #f8fafc, #f1f5f9); 
+            border: 2px dashed #94a3b8; padding: 15px; border-radius: 16px; 
+            height: 120px; overflow-y: auto; word-break: break-all; 
+            font-size: 0.9rem; color: var(--text-dark); line-height: 1.5;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); font-family: Arial, sans-serif;
+        }
+        .preview-placeholder { color: #cbd5e1; font-size: 0.95rem; font-weight: 500; display: flex; height: 100%; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif;}
 
-        /* Target Number inputs */
-        .phone-input-wrapper { display: flex; gap: 8px; width: 100%; }
-        .country-code { width: 85px; flex-shrink: 0; padding: 12px 5px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; background: var(--bg-color); text-align: center; }
-        .phone-number { flex: 1; min-width: 0; padding: 12px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; color: var(--text-dark); outline: none; transition: 0.3s; }
-        .phone-number:focus, .country-code:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.1); }
+        /* Phone Input Styling */
+        .phone-input-wrapper { display: flex; gap: 10px; width: 100%; }
+        .country-code-select { width: 100px; flex-shrink: 0; padding: 14px 10px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 0.95rem; font-weight: 600; color: var(--text-dark); outline: none; background: var(--white); cursor: pointer; transition: 0.3s; }
+        .phone-number { flex: 1; min-width: 0; width: 100%; padding: 14px 15px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 1.05rem; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; }
+        .country-code-select:focus, .phone-number:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(18, 140, 126, 0.1); }
 
         /* Action Buttons */
-        .btn-group { display: flex; gap: 10px; width: 100%; margin-top: 20px; }
-        
-        .btn-generate { width: 100%; background: #1e293b; color: var(--white); border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .btn-generate:active { transform: scale(0.96); }
-
-        .btn-send { flex: 2; background: var(--primary); color: var(--white); border: none; padding: 15px; border-radius: 10px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(18, 140, 126, 0.3); }
-        .btn-send:active { transform: scale(0.96); background: var(--primary-dark); }
-        
-        .btn-copy { flex: 1; background: var(--white); color: var(--text-dark); border: 1.5px solid var(--border); padding: 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .btn-group { display: flex; gap: 15px; width: 100%; margin-top: 25px; }
+        .btn-send { flex: 2; background: linear-gradient(135deg, var(--primary), #1ebea5); color: var(--white); border: none; padding: 16px; border-radius: 14px; font-size: 1.05rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 15px rgba(18, 140, 126, 0.3); }
+        .btn-send:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(18, 140, 126, 0.2); }
+        .btn-copy { flex: 1; background: var(--bg-color); color: var(--text-dark); border: 1.5px solid var(--border); padding: 16px; border-radius: 14px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
         .btn-copy:active { transform: scale(0.96); background: #e2e8f0; }
 
-        .error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 5px; display: none; }
-        
+        /* How it works Info Box */
+        .info-box { background: #e8f5e9; border: 1px solid #c8e6c9; padding: 18px; border-radius: 16px; display: flex; gap: 15px; align-items: center; margin-top: 10px; }
+        .info-box-icon { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(18,140,126,0.3); }
+        .info-box-text h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); margin-bottom: 3px; }
+        .info-box-text p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+        .error-msg { color: #ef4444; font-size: 0.8rem; margin-top: 8px; display: none; font-weight: 500; margin-left: 42px; }
+
         /* Toast Notification */
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); background: #323232; color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); white-space: nowrap; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 50px); background: #323232; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 500; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.2); white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+        .toast i { color: #4ade80; font-size: 18px; }
         .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
     </style>
 </head>
@@ -95,23 +154,32 @@
 
         <div class="content-area">
             
-            <div class="info-section">
-                <div class="info-icon"><i class="fa-solid fa-bomb"></i></div>
-                <h2>Message Repeater</h2>
-                <p>Repeat any text up to 10,000 times instantly!</p>
+            <div class="hero-banner">
+                <div class="hero-text">
+                    <h2>Message<br>Repeater</h2>
+                    <p>Repeat any text or emoji up to 10,000 times instantly!</p>
+                </div>
+                <div class="hero-icon">
+                    <i class="fa-solid fa-bomb"></i>
+                </div>
             </div>
 
             <div class="form-card">
                 
                 <div class="input-group">
-                    <label>Text to Repeat</label>
+                    <div class="label-row">
+                        <div class="label-icon"><i class="fa-solid fa-comment-dots"></i></div>
+                        <span class="label-text">Text to Repeat</span>
+                    </div>
                     <textarea id="msgToRepeat" class="text-input" placeholder="E.g. Sorry, I love you, Hi..."></textarea>
-                    <div id="errorMsgText" class="error-msg">Please enter some text.</div>
+                    <div id="errorMsgText" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Please enter some text.</div>
                 </div>
 
                 <div class="row-group">
                     <div class="num-box">
-                        <label>Repeat Count (Max 10K)</label>
+                        <div class="label-row" style="margin-bottom: 8px;">
+                            <span class="label-text" style="font-size: 0.85rem; color: var(--text-muted);">Repeat Count (Max 10K)</span>
+                        </div>
                         <input type="number" id="repeatCount" class="num-input" value="100" min="1" max="10000">
                     </div>
                     <label class="checkbox-wrapper">
@@ -124,8 +192,10 @@
                     <i class="fa-solid fa-rotate-right"></i> Generate Text
                 </button>
 
-                <div class="input-group">
-                    <label>Generated Preview</label>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <div class="label-row" style="margin-bottom: 8px;">
+                        <span class="label-text" style="color: var(--hero-grad-1);">✨ Generated Preview</span>
+                    </div>
                     <div class="preview-box" id="previewBox">
                         <span class="preview-placeholder">Preview will appear here...</span>
                     </div>
@@ -134,35 +204,55 @@
             </div>
 
             <div class="form-card">
-                <div class="input-group">
-                    <label>Target WhatsApp Number</label>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <div class="label-row">
+                        <div class="label-icon" style="background: #e8f5e9; color: var(--primary);"><i class="fa-regular fa-user"></i></div>
+                        <span class="label-text">Target WhatsApp Number</span>
+                    </div>
+                    
                     <div class="phone-input-wrapper">
-                        <select id="countryCode" class="country-code">
-                            <option value="+92">+92 (PK)</option>
-                            <option value="+91">+91 (IN)</option>
-                            <option value="+880">+880 (BD)</option>
-                            <option value="+1">+1 (US)</option>
-                            <option value="+44">+44 (UK)</option>
+                        <select id="countryCode" class="country-code-select">
+                            <option value="+92" selected>🇵🇰 +92</option>
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+880">🇧🇩 +880</option>
+                            <option value="+971">🇦🇪 +971</option>
+                            <option value="+966">🇸🇦 +966</option>
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
                         </select>
                         <input type="tel" id="phoneNumber" class="phone-number" placeholder="300 1234567" autocomplete="off">
                     </div>
-                    <div id="errorPhoneText" class="error-msg">Enter a valid number and generate text first.</div>
+                    <div id="errorPhoneText" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid number & generate text first.</div>
                 </div>
 
                 <div class="btn-group">
                     <button class="btn-copy" onclick="copyText()">
-                        <i class="fa-regular fa-copy"></i> Copy
+                        <i class="fa-regular fa-copy" style="font-size: 1.2rem;"></i>
+                        <div>
+                            <div style="font-size: 0.95rem;">Copy</div>
+                        </div>
                     </button>
                     <button class="btn-send" onclick="sendToWhatsApp()">
-                        <i class="fa-solid fa-bomb"></i> Send Bomb
+                        <i class="fa-solid fa-bomb" style="font-size: 1.3rem;"></i>
+                        <div>
+                            <div style="font-size: 1.05rem;">Send Bomb</div>
+                        </div>
                     </button>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                <div class="info-box-text">
+                    <h3>How it works?</h3>
+                    <p>Enter the text you want to repeat, set the count, hit generate, and boom! Copy it or send directly.</p>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i> Text copied to clipboard!</div>
+    <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> Text copied to clipboard!</div>
 
     <script>
         const msgInput = document.getElementById('msgToRepeat');
@@ -184,7 +274,7 @@
 
             if (text === "") {
                 errorMsgText.style.display = 'block';
-                msgInput.style.borderColor = 'var(--danger)';
+                msgInput.style.borderColor = 'var(--hero-grad-1)';
                 return;
             }
             
@@ -200,28 +290,29 @@
 
             let separator = newLineCheck.checked ? '\n' : ' ';
             
-            // Fast way to repeat string
             let result = Array(count).fill(text).join(separator);
             generatedTextData = result;
 
-            // Show preview
             previewBox.innerText = result;
         }
 
         // 2. Send to WhatsApp
         function sendToWhatsApp() {
+            let rawCc = ccSelect.value.split(' ')[1] || ccSelect.value;
+            let cc = rawCc.replace('+', ''); 
             let phone = phoneInput.value.replace(/\D/g, ''); 
             
             if (generatedTextData === "" || phone.length < 7) {
                 errorPhoneText.style.display = 'block';
+                if(phone.length < 7) phoneInput.style.borderColor = '#ef4444';
                 return;
             }
             errorPhoneText.style.display = 'none';
+            phoneInput.style.borderColor = 'var(--border)';
 
-            let fullNumber = ccSelect.value.replace('+', '') + phone;
+            let fullNumber = cc + phone;
             let waUrl = `whatsapp://send?phone=${fullNumber}&text=${encodeURIComponent(generatedTextData)}`;
             
-            // Native Bridge Fallback
             if (window.AndroidApp && window.AndroidApp.openDirectChat) {
                 window.AndroidApp.openDirectChat(fullNumber, generatedTextData);
             } else {
@@ -254,7 +345,10 @@
         // Auto formatting phone input
         phoneInput.addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, ''); 
-            if(this.value.length > 0) errorPhoneText.style.display = 'none';
+            if(this.value.length > 0) {
+                errorPhoneText.style.display = 'none';
+                this.style.borderColor = 'var(--border)';
+            }
         });
 
         msgInput.addEventListener('input', function () {
