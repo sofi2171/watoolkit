@@ -139,18 +139,20 @@
 
         window.addEventListener('load', () => { setTimeout(checkAndLoad, 500); });
 
-        // 🚀 AAPKA ORIGINAL PERMISSION LOGIC
+        // 🚀 ORIGINAL PERMISSION LOGIC
         async function askPermission() {
             try {
-                const fs = window.Capacitor.Plugins.Filesystem;
-                await fs.requestPermissions(); 
-                checkAndLoad();
+                if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+                    const fs = window.Capacitor.Plugins.Filesystem;
+                    await fs.requestPermissions(); 
+                    checkAndLoad();
+                }
             } catch(e) { 
                 alert('Permission required to show statuses!'); 
             }
         }
 
-        // 🚀 AAPKI ORIGINAL 100% WORKING SCAN LOGIC
+        // 🚀 ORIGINAL 100% WORKING SCAN LOGIC
         async function checkAndLoad() {
             const container = document.getElementById('media-container');
             const permBox = document.getElementById('permission-box');
@@ -161,6 +163,12 @@
             emptyState.style.display = 'none';
             loadingText.style.display = 'block';
             container.innerHTML = '';
+
+            if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) {
+                loadingText.style.display = 'none';
+                permBox.style.display = 'block';
+                return;
+            }
 
             const fs = window.Capacitor.Plugins.Filesystem;
             
@@ -268,48 +276,63 @@
             }
         }
 
-        // 🚀 BULLETPROOF SHARE FIX: Copies to Cache first, then shares!
+        // 🚀 CRASH-PROOF & BULLETPROOF SHARE FIX
         async function shareMedia(file) {
             try {
                 const promoText = "Check out this awesome status! 🔥\n\nDownloaded using *WA Toolkit Premium*.\nGet the app here: https://healthxray.online/watoolkit";
-                const fs = window.Capacitor.Plugins.Filesystem;
-                const sharePlugin = window.Capacitor.Plugins.Share;
-                
                 let shareUri = file.uri;
                 
                 // 1. Android ki pabandiyan (restrictions) todne ke liye hum file ko "Cache" me copy kar rahe hain
-                try {
-                    let tempName = 'share_' + file.name;
-                    let copyOptions = {
-                        to: tempName,
-                        toDirectory: 'CACHE'
-                    };
-                    
-                    if (file.uri && file.uri.startsWith('file://')) {
-                        copyOptions.from = file.uri;
-                    } else {
-                        copyOptions.path = file.path + '/' + file.name;
-                        copyOptions.directory = 'EXTERNAL_STORAGE';
-                    }
+                if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+                    const fs = window.Capacitor.Plugins.Filesystem;
+                    try {
+                        let tempName = 'share_' + file.name;
+                        let copyOptions = {
+                            to: tempName,
+                            toDirectory: 'CACHE'
+                        };
+                        
+                        if (file.uri && file.uri.startsWith('file://')) {
+                            copyOptions.from = file.uri;
+                        } else {
+                            copyOptions.path = file.path + '/' + file.name;
+                            copyOptions.directory = 'EXTERNAL_STORAGE';
+                        }
 
-                    let copyResult = await fs.copy(copyOptions);
-                    if(copyResult && copyResult.uri) {
-                        shareUri = copyResult.uri; // Safe URI mil gayi!
+                        let copyResult = await fs.copy(copyOptions);
+                        if(copyResult && copyResult.uri) {
+                            shareUri = copyResult.uri; // Safe URI mil gayi!
+                        }
+                    } catch(copyError) {
+                        console.log("Cache copy failed, using direct link", copyError);
+                        if (!shareUri) {
+                            shareUri = 'file:///storage/emulated/0/' + file.path + '/' + file.name;
+                        }
                     }
-                } catch(copyError) {
-                    console.log("Cache copy failed, using direct link", copyError);
-                    if (!shareUri) {
-                        shareUri = 'file:///storage/emulated/0/' + file.path + '/' + file.name;
-                    }
+                } else if (!shareUri) {
+                    shareUri = 'file:///storage/emulated/0/' + file.path + '/' + file.name;
                 }
 
-                // 2. Ab safely Share ka popup kholo
-                await sharePlugin.share({
-                    title: 'Share Status',
-                    text: promoText,
-                    url: shareUri, 
-                    dialogTitle: 'Share with friends'
-                });
+                // 2. Safely check if Share Plugin exists (Crash-Proof)
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+                    await window.Capacitor.Plugins.Share.share({
+                        title: 'Share Status',
+                        text: promoText,
+                        url: shareUri, 
+                        dialogTitle: 'Share with friends'
+                    });
+                } 
+                // 3. Fallback: Agar browser me check kar rahe hain to default Web Share chalega
+                else if (navigator.share) {
+                    await navigator.share({
+                        title: 'Share Status',
+                        text: promoText,
+                        url: shareUri
+                    });
+                } 
+                else {
+                    alert("⚠️ Share plugin is missing or not supported. Make sure app is synced!");
+                }
 
             } catch (error) {
                 alert("Sharing failed: " + error.message);
