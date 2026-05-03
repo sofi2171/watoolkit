@@ -48,7 +48,7 @@
         #loading-text { text-align: center; padding: 40px 20px; color: var(--text-muted); font-weight: 500; display: none; font-size: 0.95rem;}
         #empty-state { text-align: center; padding: 60px 20px; display: none; }
 
-        /* Media Grid - Fixed for all mobiles */
+        /* Media Grid - Perfect for all mobiles */
         .media-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 5px; }
         
         .card { background: #000; border-radius: 12px; overflow: hidden; position: relative; height: 180px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); }
@@ -139,18 +139,18 @@
 
         window.addEventListener('load', () => { setTimeout(checkAndLoad, 500); });
 
-        // 🚀 AAPKA ORIGINAL PERMISSION FUNCTION
+        // 🚀 AAPKA ORIGINAL PERMISSION LOGIC
         async function askPermission() {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
                 await fs.requestPermissions(); 
                 checkAndLoad();
             } catch(e) { 
-                alert('Permission required!'); 
+                alert('Permission required to show statuses!'); 
             }
         }
 
-        // 🚀 AAPKA ORIGINAL SCANNING LOOP (100% WORKING)
+        // 🚀 AAPKI ORIGINAL 100% WORKING SCAN LOGIC
         async function checkAndLoad() {
             const container = document.getElementById('media-container');
             const permBox = document.getElementById('permission-box');
@@ -223,7 +223,6 @@
                 emptyState.style.display = 'none';
                 
                 filtered.forEach(file => {
-                    // AAPKI ORIGINAL SRC LOGIC
                     let src = file.uri ? window.Capacitor.convertFileSrc(file.uri) : window.Capacitor.convertFileSrc('file:///storage/emulated/0/' + file.path + '/' + file.name);
                     
                     const card = document.createElement('div');
@@ -252,12 +251,12 @@
             }
         }
 
-        // 🚀 AAPKI ORIGINAL DOWNLOAD LOGIC (No changes here)
+        // 🚀 ORIGINAL DOWNLOAD LOGIC
         async function downloadMedia(file) {
             try {
                 const fs = window.Capacitor.Plugins.Filesystem;
                 let uriOrPath = file.uri ? file.uri : file.path + '/' + file.name;
-                let copyOptions = { to: 'Download/' + file.name, toDirectory: 'EXTERNAL_STORAGE' };
+                let copyOptions = { to: 'Download/WAToolkit_' + file.name, toDirectory: 'EXTERNAL_STORAGE' };
                 
                 if (file.uri && file.uri.startsWith('file://')) { copyOptions.from = file.uri; }
                 else { copyOptions.path = uriOrPath; copyOptions.directory = 'EXTERNAL_STORAGE'; }
@@ -269,15 +268,42 @@
             }
         }
 
-        // 🚀 PRO FEATURE: Share Status with Promotional Text
+        // 🚀 BULLETPROOF SHARE FIX: Copies to Cache first, then shares!
         async function shareMedia(file) {
             try {
                 const promoText = "Check out this awesome status! 🔥\n\nDownloaded using *WA Toolkit Premium*.\nGet the app here: https://healthxray.online/watoolkit";
+                const fs = window.Capacitor.Plugins.Filesystem;
                 const sharePlugin = window.Capacitor.Plugins.Share;
                 
-                // Constructing proper file URI for sharing
-                let shareUri = file.uri ? file.uri : 'file:///storage/emulated/0/' + file.path + '/' + file.name;
+                let shareUri = file.uri;
+                
+                // 1. Android ki pabandiyan (restrictions) todne ke liye hum file ko "Cache" me copy kar rahe hain
+                try {
+                    let tempName = 'share_' + file.name;
+                    let copyOptions = {
+                        to: tempName,
+                        toDirectory: 'CACHE'
+                    };
+                    
+                    if (file.uri && file.uri.startsWith('file://')) {
+                        copyOptions.from = file.uri;
+                    } else {
+                        copyOptions.path = file.path + '/' + file.name;
+                        copyOptions.directory = 'EXTERNAL_STORAGE';
+                    }
 
+                    let copyResult = await fs.copy(copyOptions);
+                    if(copyResult && copyResult.uri) {
+                        shareUri = copyResult.uri; // Safe URI mil gayi!
+                    }
+                } catch(copyError) {
+                    console.log("Cache copy failed, using direct link", copyError);
+                    if (!shareUri) {
+                        shareUri = 'file:///storage/emulated/0/' + file.path + '/' + file.name;
+                    }
+                }
+
+                // 2. Ab safely Share ka popup kholo
                 await sharePlugin.share({
                     title: 'Share Status',
                     text: promoText,
@@ -286,7 +312,7 @@
                 });
 
             } catch (error) {
-                alert("Sharing failed or not supported by your device.");
+                alert("Sharing failed: " + error.message);
             }
         }
 
@@ -301,7 +327,7 @@
             }
             
             document.getElementById('v-down').onclick = () => downloadMedia(file);
-            document.getElementById('v-share').onclick = () => shareMedia(file); // Share button connected
+            document.getElementById('v-share').onclick = () => shareMedia(file);
             
             v.classList.add('active');
         }
